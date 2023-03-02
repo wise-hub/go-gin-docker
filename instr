@@ -1,0 +1,15 @@
+# build image
+docker build --rm -f dockerfile -t gin-docker:latest .
+
+# run container from image
+docker run -d --restart=always -p 8000:44400 gin-docker
+
+# list all containers + stopped
+docker ps -a
+
+# delete docker image
+docker image rm image_id
+
+# remove all unused images
+docker image prune
+
