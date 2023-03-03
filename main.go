@@ -6,9 +6,7 @@ import (
 
 func router() *gin.Engine {
 
-	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
+	r := gin.Default()
 
 	r.GET("/api/customer/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
@@ -19,6 +17,9 @@ func router() *gin.Engine {
 }
 
 func main() {
+
+	//gin.SetMode(gin.ReleaseMode)
+
 	r := router()
-	r.Run("0.0.0.0:44400")
+	r.RunTLS(":8443", "./cert/server.pem", "./cert/server.key")
 }

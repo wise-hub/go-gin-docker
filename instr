@@ -2,7 +2,7 @@
 docker build --rm -f dockerfile -t gin-docker:latest .
 
 # run container from image
-docker run -d --restart=always -p 8000:44400 gin-docker
+docker run -d --restart=always -p 8443:8443 gin-docker
 
 # list all containers + stopped
 docker ps -a
@@ -12,4 +12,8 @@ docker image rm image_id
 
 # remove all unused images
 docker image prune
+
+# log location containers when installed from snap repo
+docker logs container_id
+/var/snap/docker/common/var-lib-docker/containers/container_id/container_id-json.log
 
