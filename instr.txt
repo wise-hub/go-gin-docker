@@ -17,3 +17,13 @@ docker image prune
 docker logs container_id
 /var/snap/docker/common/var-lib-docker/containers/container_id/container_id-json.log
 
+# add regular user to use docker 
+sudo setfacl -m user:$USER:rw /var/run/docker.sock
+
+
+
+
+
+
+
+

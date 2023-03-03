@@ -10,7 +10,7 @@ func router() *gin.Engine {
 
 	r.GET("/api/customer/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
-		c.JSON(200, gin.H{"customer": id})
+		c.JSON(200, gin.H{"customer_endpoint_one": id})
 	})
 
 	return r
@@ -21,5 +21,5 @@ func main() {
 	//gin.SetMode(gin.ReleaseMode)
 	//
 	r := router()
-	r.RunTLS(":9443", "./cert/server.pem", "./cert/server.key")
+	r.RunTLS(":8443", "./cert/server.pem", "./cert/server.key")
 }
