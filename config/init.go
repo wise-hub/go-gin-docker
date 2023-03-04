@@ -25,6 +25,7 @@ func Init() (*Dependencies, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	return &Dependencies{
 		Cfg: &curCfg,
