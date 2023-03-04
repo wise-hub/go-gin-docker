@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"ginws/dep"
+
 	"github.com/gin-gonic/gin"
+	_ "github.com/sijms/go-ora/v2"
 )
 
 func router() *gin.Engine {
@@ -18,8 +22,15 @@ func router() *gin.Engine {
 
 func main() {
 
-	//gin.SetMode(gin.ReleaseMode)
-	//
+	d, err := dep.Init()
+	if err != nil {
+		panic(err)
+	}
+	if d.Cfg.Environment == "PROD" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	fmt.Println(d.Cfg.Database.DoConnect)
+
 	r := router()
-	r.RunTLS(":8443", "./cert/server.pem", "./cert/server.key")
+	r.RunTLS(":"+d.Cfg.Port, d.Cfg.PemLoc, d.Cfg.KeyLoc)
 }

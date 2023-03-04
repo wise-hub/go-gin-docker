@@ -1,8 +1,11 @@
-module test.com/gin-docker
+module ginws
 
 go 1.19
 
-require github.com/gin-gonic/gin v1.9.0
+require (
+	github.com/gin-gonic/gin v1.9.0
+	github.com/sijms/go-ora/v2 v2.5.33
+)
 
 require (
 	github.com/bytedance/sonic v1.8.0 // indirect

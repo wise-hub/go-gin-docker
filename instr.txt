@@ -6,6 +6,8 @@ docker run -d --restart=always -p 8443:8443 gin-docker
 
 # list all containers + stopped
 docker ps -a
+docker stop name
+docker rm name
 
 # delete docker image
 docker image rm image_id
@@ -19,11 +21,4 @@ docker logs container_id
 
 # add regular user to use docker 
 sudo setfacl -m user:$USER:rw /var/run/docker.sock
-
-
-
-
-
-
-
 
