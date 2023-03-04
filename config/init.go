@@ -1,10 +1,12 @@
-package dep
+package config
 
 import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init() (*Dependencies, error) {
@@ -13,25 +15,31 @@ func Init() (*Dependencies, error) {
 		return nil, err
 	}
 
-	db, err := connectDb(cfg.Database)
+	var curCfg = cfg.Config[0] // test default
+
+	if cfg.Environment == "PROD" {
+		curCfg = cfg.Config[1]
+		gin.SetMode(gin.ReleaseMode)
+	}
+	db, err := connectDb(&curCfg.Database)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Dependencies{
-		Cfg: cfg,
+		Cfg: &curCfg,
 		Db:  db,
 	}, nil
 }
 
-func loadCfg() (*Config, error) {
-	file, err := os.Open("./config/config.json")
+func loadCfg() (*MainConfig, error) {
+	file, err := os.Open("./config.json")
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	var cfg Config
+	var cfg MainConfig
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&cfg); err != nil {
@@ -42,14 +50,15 @@ func loadCfg() (*Config, error) {
 }
 
 func connectDb(cfg *Database) (*sql.DB, error) {
+
 	con := fmt.Sprintf("oracle://%s:%s@%s:%s/%s",
 		cfg.Username,
 		cfg.Password,
 		cfg.Server,
 		cfg.Port,
 		cfg.Service)
-	db, err := sql.Open("oracle", con)
 
+	db, err := sql.Open("oracle", con)
 	if err != nil {
 		return nil, err
 	}

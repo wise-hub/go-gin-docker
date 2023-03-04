@@ -1,0 +1,33 @@
+{
+    "Environment": "TEST",
+
+    "Config":
+        [{
+            "EnvType": "TEST",
+
+            "Port": "8888",
+            "PemLoc": "./cert/server.pem",
+            "KeyLoc": "./cert/server.key",
+            "Database":  {
+                "Server": "127.0.0.1",
+                "Port": "1521",
+                "Service": "orcl",
+                "Username": "db",
+                "Password": "db"
+            }
+        },
+        {
+            "EnvType": "PROD",
+
+            "Port": "9443",
+            "PemLoc": "./cert/server.pem",
+            "KeyLoc": "./cert/server.key",
+            "Database":  {
+                "Server": "10.10.10.10",
+                "Port": "1521",
+                "Service": "sn",
+                "Username": "usr",
+                "Password": "pwd"
+            }
+        }]
+}
