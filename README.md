@@ -4,7 +4,6 @@
 ## Table of Contents
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
-* [Features](#features)
 * [Setup](#setup)
 * [Usage](#usage)
 
@@ -13,18 +12,12 @@
 - Works with Oracle DB (might switch to any other easily)
 - Built on Gin Web Framework
 - Containerized with Docker
-- Basic logic for login authentication
 - LDAP authentication
+- Logged-in user authentication (token-based, offline and online validation)
 - Postman collection included
 
 ## Technologies Used
 - Go 1.19
-
-## Features
-List the ready features here:
-- LDAP Login
-- Logged-in user authentication (token-based, offline and online validation)
-- Common CRUD services
 
 ## Setup
 1. Install Go 1.19 and Docker
