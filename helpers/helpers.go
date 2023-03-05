@@ -8,70 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
-
-/*
-TOKENS
-*/
-
-type AccessToken struct {
-	Username string `json:"username"`
-	ExpDate  int64  `json:"exp"`
-	Role     string `json:"role"`
-	jwt.StandardClaims
-}
 
 type TokenData struct {
 	User    string
 	Role    string
 	ExpDate time.Time
-}
-
-func EncodeAccessToken(username string, expiration time.Time, role string, secretKey []byte) (string, error) {
-	// Define the user claims
-	claims := AccessToken{
-		Username: username,
-		ExpDate:  expiration.Unix(),
-		Role:     role,
-	}
-
-	// Create the JWT token
-	//token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Sign the token with a secret key
-	signedToken, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return signedToken, nil
-}
-
-func DecodeAccessToken(tokenString string, secretKey []byte) (*AccessToken, error) {
-	// Parse the token string
-	token, err := jwt.ParseWithClaims(tokenString, &AccessToken{}, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing algorithm
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return secretKey, nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Extract the user claims from the token
-	claims, ok := token.Claims.(*AccessToken)
-	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	return claims, nil
 }
 
 func ValidateTokenFull(c *gin.Context) (*TokenData, error) {

@@ -1,10 +1,10 @@
 package repository
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
-	"ginws/helpers"
-	"time"
 )
 
 func ValidateUserAtDb(d *sql.DB, username string) bool {
@@ -134,17 +134,11 @@ func InsertNewTokenCreateToken(d *sql.DB, username string, role string, ipAddr s
 	// }
 	// token := hex.EncodeToString(tokenBytes)
 
-	//b := make([]byte, 48) // 48 bytes = 64 chars
-	//if _, err := rand.Read(b); err != nil {
-	//	panic(err)
-	//}
-	//token := base64.URLEncoding.EncodeToString(b)[:64] // strip padding
-
-	secretKey := []byte("gZQB55nzO1nIEeZ8Mb6WZOOm89JJGXlBmkKqLeLIQBFhSDyaHgyscvmzhOaLKWMk")
-	token, err := helpers.EncodeAccessToken(username, time.Now().Add(time.Hour), role, secretKey)
-	if err != nil {
+	b := make([]byte, 48) // 48 bytes = 64 chars
+	if _, err := rand.Read(b); err != nil {
 		panic(err)
 	}
+	token := base64.URLEncoding.EncodeToString(b)[:64] // strip padding
 
 	// set token, expiry and last login
 	/*

@@ -48,8 +48,8 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			_, err := helpers.LdapAuth(d, login.Username, login.Password)
 
 			if err != nil {
-				fmt.Println("Authentication failed: %v\n", err)
-				fmt.Println("auth failed")
+				//fmt.Println("Authentication failed: %v\n", err)
+				fmt.Println("Authenticaiton failed")
 				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (3)"})
 				return
 			}
