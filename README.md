@@ -22,9 +22,9 @@
 
 ## Features
 List the ready features here:
-- Awesome feature 1
-- Awesome feature 2
-- Awesome feature 3
+- LDAP Login
+- Logged-in user authentication (token-based)
+- Common CRUD services
 
 ## Setup
 1. Install Go 1.19 and download DEV VM with Oracle database. Use Virtual Box or other VM software.
