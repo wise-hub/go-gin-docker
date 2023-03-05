@@ -23,17 +23,24 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		if !helpers.IsValidUsername(login.Username) {
 			fmt.Println("invalid username")
-			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (1)"})
+			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (0)"})
 			return
 		}
 
-		loginCheck := repository.ValidateUserAtDb(d.Db, login.Username)
+		//loginCheck := repository.ValidateUserAtDb(d.Db, login.Username)
+		role, err := repository.GetRoleFromUser(d.Db, login.Username)
+
+		if err != nil {
+			fmt.Println("role fetch failed")
+			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (1)"})
+			return
+		}
 
 		res := gin.H{
 			"result": "Invalid username or password (2)",
 		}
 
-		if loginCheck {
+		if len(role) > 0 {
 
 			// use this u/p for ldap login -> "einstein", "password"
 
@@ -48,7 +55,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			//remoteAddr := strings.Split(c.Request.RemoteAddr, ":")[0]
 
 			remoteAddr := helpers.GetRemoteAddr(c)
-			token, err := repository.InsertNewToken(d.Db, login.Username, remoteAddr)
+			token, err := repository.InsertNewToken(d.Db, login.Username, role, remoteAddr)
 
 			if err != nil {
 				fmt.Println("user table update failed")

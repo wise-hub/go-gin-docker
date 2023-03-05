@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
+	"ginws/helpers"
+	"time"
 )
 
 func ValidateUserAtDb(d *sql.DB, username string) bool {
@@ -18,6 +18,53 @@ func ValidateUserAtDb(d *sql.DB, username string) bool {
 
 	var result int
 	err = stmt.QueryRow(username).Scan(&result)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	if result == 0 {
+		return false
+	}
+
+	return true
+}
+
+func GetRoleFromUser(d *sql.DB, username string) (string, error) {
+	// check if customer exists and is active
+	stmt, err := d.Prepare("SELECT user_role from users where username = :1 and user_status = 'E'")
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+	defer stmt.Close()
+
+	var result string
+	err = stmt.QueryRow(username).Scan(&result)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+
+	if len(result) == 0 {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func GetUserFromToken(d *sql.DB, token string) bool {
+	// check if token exists and user owner is active
+	stmt, err := d.Prepare("SELECT username cnt from users where token = :1 and user_status = 'E'")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer stmt.Close()
+
+	var result int
+	err = stmt.QueryRow(token).Scan(&result)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -54,14 +101,26 @@ func ValidateTokenAtDb(d *sql.DB, token string) bool {
 	return true
 }
 
-func InsertNewToken(d *sql.DB, username string, ipAddr string) (string, error) {
+func InsertNewToken(d *sql.DB, username string, role string, ipAddr string) (string, error) {
 
-	tokenBytes := make([]byte, 32)
-	_, err := rand.Read(tokenBytes)
+	// tokenBytes := make([]byte, 32)
+	// _, err := rand.Read(tokenBytes)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// token := hex.EncodeToString(tokenBytes)
+
+	//b := make([]byte, 48) // 48 bytes = 64 chars
+	//if _, err := rand.Read(b); err != nil {
+	//	panic(err)
+	//}
+	//token := base64.URLEncoding.EncodeToString(b)[:64] // strip padding
+
+	secretKey := []byte("gZQB55nzO1nIEeZ8Mb6WZOOm89JJGXlBmkKqLeLIQBFhSDyaHgyscvmzhOaLKWMk")
+	token, err := helpers.EncodeAccessToken(username, time.Now().Add(time.Hour), role, secretKey)
 	if err != nil {
 		panic(err)
 	}
-	token := hex.EncodeToString(tokenBytes)
 
 	// set token, expiry and last login
 	/*
@@ -87,6 +146,7 @@ func InsertNewToken(d *sql.DB, username string, ipAddr string) (string, error) {
 		panic(err)
 	}
 	fmt.Println(token)
+	fmt.Println(len(token))
 
 	return token, nil
 }

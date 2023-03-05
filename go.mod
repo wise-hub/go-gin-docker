@@ -3,6 +3,7 @@ module ginws
 go 1.19
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/sijms/go-ora/v2 v2.5.33

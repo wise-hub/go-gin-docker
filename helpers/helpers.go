@@ -1,12 +1,104 @@
 package helpers
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+/*
+TOKENS
+*/
+
+type AccessToken struct {
+	Username string `json:"username"`
+	ExpDate  int64  `json:"exp"`
+	Role     string `json:"role"`
+	jwt.StandardClaims
+}
+
+func EncodeAccessToken(username string, expiration time.Time, role string, secretKey []byte) (string, error) {
+	// Define the user claims
+	claims := AccessToken{
+		Username: username,
+		ExpDate:  expiration.Unix(),
+		Role:     role,
+	}
+
+	// Create the JWT token
+	//token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Sign the token with a secret key
+	signedToken, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
+func DecodeAccessToken(tokenString string, secretKey []byte) (*AccessToken, error) {
+	// Parse the token string
+	token, err := jwt.ParseWithClaims(tokenString, &AccessToken{}, func(token *jwt.Token) (interface{}, error) {
+		// Validate the signing algorithm
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the user claims from the token
+	claims, ok := token.Claims.(*AccessToken)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims, nil
+}
+
+func FetchValidTokenOffline(c *gin.Context) string {
+
+	// to do - add database operations: select from table and check expiration datetime
+
+	authHeader := c.Request.Header.Get("Authorization")
+
+	if authHeader == "" {
+		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
+		return "0"
+	}
+
+	authHeaderParts := strings.Split(authHeader, " ")
+	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
+		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+		return "0"
+	}
+
+	token := authHeaderParts[1]
+
+	if len(token) != 155 {
+		return "0"
+	}
+
+	match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-]+$`, token)
+	if err != nil || !match {
+		return "0"
+	}
+
+	return token
+}
+
+/*  -------------------------------------  */
 
 func GetRemoteAddr(c *gin.Context) string {
 
@@ -50,6 +142,7 @@ func ValidateIP(ip string) bool {
 	}
 	return true
 }
+
 func AssertEnvForError(env string, err error) string {
 
 	result := "Invalid request payload"
@@ -59,37 +152,6 @@ func AssertEnvForError(env string, err error) string {
 	}
 
 	return result
-}
-
-func FetchValidTokenOffline(c *gin.Context) string {
-
-	// to do - add database operations: select from table and check expiration datetime
-
-	authHeader := c.Request.Header.Get("Authorization")
-
-	if authHeader == "" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-		return "0"
-	}
-
-	authHeaderParts := strings.Split(authHeader, " ")
-	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		return "0"
-	}
-
-	token := authHeaderParts[1]
-
-	if len(token) != 64 {
-		return "0"
-	}
-
-	match, err := regexp.MatchString(`^[0-9a-fA-F]+$`, token)
-	if err != nil || !match {
-		return "0"
-	}
-
-	return token
 }
 
 func IsValidCustomerID(cust_id string) bool {
