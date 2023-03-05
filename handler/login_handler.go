@@ -13,7 +13,7 @@ import (
 
 func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		login := model.Login{}
+		login := &model.Login{}
 
 		if err := c.ShouldBind(&login); err != nil {
 			fmt.Println("not bound json")
@@ -21,13 +21,13 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
-		if !helpers.IsValidUsername(*&login.Username) {
+		if !helpers.IsValidUsername(login.Username) {
 			fmt.Println("invalid username")
 			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (1)"})
 			return
 		}
 
-		loginCheck := repository.ValidateUserAtDb(d.Db, *&login.Username)
+		loginCheck := repository.ValidateUserAtDb(d.Db, login.Username)
 
 		res := gin.H{
 			"result": "Invalid username or password (2)",
@@ -37,7 +37,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 
 			// use this u/p for ldap login -> "einstein", "password"
 
-			_, err := helpers.LdapAuth(*&d, *&login.Username, *&login.Password)
+			_, err := helpers.LdapAuth(d, login.Username, login.Password)
 
 			if err != nil {
 				fmt.Println("Authentication failed: %v\n", err)
@@ -47,8 +47,8 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			}
 			//remoteAddr := strings.Split(c.Request.RemoteAddr, ":")[0]
 
-			remoteAddr := helpers.GetRemoteAddr(*&c)
-			token, err := repository.InsertNewToken(d.Db, *&login.Username, remoteAddr)
+			remoteAddr := helpers.GetRemoteAddr(c)
+			token, err := repository.InsertNewToken(d.Db, login.Username, remoteAddr)
 
 			if err != nil {
 				fmt.Println("user table update failed")
