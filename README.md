@@ -1,5 +1,5 @@
 # Go Gin Dockerized
-> Outline a brief description of your project.
+> Simple and Fast API CRUD service 
 
 ## Table of Contents
 * [General Info](#general-information)
