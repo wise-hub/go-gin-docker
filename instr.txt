@@ -2,7 +2,7 @@
 docker build --rm -f dockerfile -t gin-docker:latest .
 
 # run container from image
-docker run -d --restart=always -p 8443:8443 gin-docker
+docker run -d --restart=always -p 8443:4444 gin-docker
 
 # list all containers + stopped
 docker ps -a

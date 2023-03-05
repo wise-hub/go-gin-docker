@@ -15,8 +15,9 @@ FROM scratch
 WORKDIR /bin/
 
 COPY --from=builder /go/src/go-gin/app .
+COPY --from=builder /go/src/go-gin/config.json .
 COPY --from=builder /go/src/go-gin/cert cert/
 
 CMD [ "./app" ]
 
-EXPOSE 8443
+EXPOSE 4444

@@ -22,10 +22,11 @@ func Init() (*Dependencies, error) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	db, err := connectDb(&curCfg.Database)
+
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
+	fmt.Println("DB CONNECTED")
 
 	return &Dependencies{
 		Cfg: &curCfg,
@@ -51,6 +52,8 @@ func loadCfg() (*MainConfig, error) {
 }
 
 func connectDb(cfg *Database) (*sql.DB, error) {
+
+	//os.Setenv("NLS_LANG", "AMERICAN_AMERICA.UTF8")
 
 	con := fmt.Sprintf("oracle://%s:%s@%s:%s/%s",
 		cfg.Username,

@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	"ginws/config"
-	c "ginws/controllers"
+	"ginws/routes"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/sijms/go-ora/v2"
 )
 
@@ -16,10 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	r := gin.Default()
-
-	r.GET("/api/customer/:id", c.GetCustomer)
-	r.POST("/api/login", c.UserLogin(*gin.Context, d.Db)) // ERROR c.UserLogin(*gin.Context, d.Db) (no value) used as valuecompilerTooManyValues
+	r := routes.Routes(d)
 
 	fmt.Println("ENV: " + *&d.Cfg.EnvType)
 
