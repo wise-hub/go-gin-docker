@@ -55,7 +55,7 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 
 	//os.Setenv("NLS_LANG", "AMERICAN_AMERICA.UTF8")
 
-	con := fmt.Sprintf("oracle://%s:%s@%s:%s/%s",
+	con := fmt.Sprintf("oracle://%s:%s@%s:%s/%s?charset=utf8",
 		cfg.Username,
 		cfg.Password,
 		cfg.Server,

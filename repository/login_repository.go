@@ -15,7 +15,11 @@ func UserLoginRepo(d *sql.DB, username string, password string) (int, error) {
 
 	var result int
 	err = stmt.QueryRow(username).Scan(&result)
+
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return result, err
+		}
 		panic(err.Error())
 	}
 

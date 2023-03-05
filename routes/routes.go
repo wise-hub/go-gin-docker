@@ -2,7 +2,7 @@ package routes
 
 import (
 	"ginws/config"
-	"ginws/controllers"
+	"ginws/handler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,17 +12,10 @@ func Routes(d *config.Dependencies) *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		api.POST("/login", func(c *gin.Context) {
-			controllers.UserLogin(c, d)
-		})
-
-		api.GET("/customer/:id", func(c *gin.Context) {
-			controllers.GetCustomer(c, d)
-		})
-
-		api.GET("/accounts/:id", func(c *gin.Context) {
-			controllers.GetAccounts(c, d)
-		})
+		api.POST("/login", handler.UserLoginHandler(d))
+		api.GET("/customer/:id", handler.GetCustomerHandler(d))
+		api.GET("/accounts/:id", handler.GetAccountsHandler(d))
+		api.GET("/customer-accounts/:id", handler.GetCustAccHandler(d))
 	}
 
 	return r
