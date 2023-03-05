@@ -1,8 +1,6 @@
 package helpers
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"regexp"
 	"strconv"
 	"strings"
@@ -10,6 +8,48 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetRemoteAddr(c *gin.Context) string {
+
+	// Try the X-Real-IP header first
+	if xrip := c.Request.Header.Get("X-Real-IP"); xrip != "" {
+		if ValidateIP(xrip) {
+			return xrip
+		}
+	}
+
+	// Try the X-Forwarded-For header next
+	if xff := c.Request.Header.Get("X-Forwarded-For"); xff != "" {
+		ips := strings.Split(xff, ",")
+		// Use the first IP address in the list
+		if len(ips) > 0 {
+			ip := strings.TrimSpace(ips[0])
+			if ValidateIP(ip) {
+				return ip
+			}
+		}
+	}
+
+	// Finally - use gin Request RemoteAddr
+	finIp := strings.Split(c.Request.RemoteAddr, ":")[0]
+	if ValidateIP(finIp) {
+		return finIp
+	}
+
+	return "not_valid_ip"
+
+}
+
+func ValidateIP(ip string) bool {
+	// Use a regular expression to validate the IP address
+	match, err := regexp.MatchString(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`, ip)
+	if err != nil {
+		return false
+	}
+	if !match {
+		return false
+	}
+	return true
+}
 func AssertEnvForError(env string, err error) string {
 
 	result := "Invalid request payload"
@@ -21,18 +61,7 @@ func AssertEnvForError(env string, err error) string {
 	return result
 }
 
-func GenerateAccessToken() string {
-	tokenBytes := make([]byte, 32)
-	_, err := rand.Read(tokenBytes)
-	if err != nil {
-		panic(err)
-	}
-	token := hex.EncodeToString(tokenBytes)
-
-	return token
-}
-
-func IsValidAccessToken(c *gin.Context) bool {
+func FetchValidTokenOffline(c *gin.Context) string {
 
 	// to do - add database operations: select from table and check expiration datetime
 
@@ -40,27 +69,27 @@ func IsValidAccessToken(c *gin.Context) bool {
 
 	if authHeader == "" {
 		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-		return false
+		return "0"
 	}
 
 	authHeaderParts := strings.Split(authHeader, " ")
 	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
 		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		return false
+		return "0"
 	}
 
 	token := authHeaderParts[1]
 
 	if len(token) != 64 {
-		return false
+		return "0"
 	}
 
 	match, err := regexp.MatchString(`^[0-9a-fA-F]+$`, token)
 	if err != nil || !match {
-		return false
+		return "0"
 	}
 
-	return true
+	return token
 }
 
 func IsValidCustomerID(cust_id string) bool {

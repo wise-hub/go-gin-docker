@@ -2,28 +2,27 @@ package helpers
 
 import (
 	"fmt"
+	"ginws/config"
 
 	"github.com/go-ldap/ldap/v3"
 )
 
-func LdapAuth(username string, password string) (string, error) {
+func LdapAuth(d *config.Dependencies, username string, password string) (string, error) {
 	// Set up the LDAP connection
-	l, err := ldap.Dial("tcp", "ldap.forumsys.com:389")
+	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%s", d.Cfg.LDAP.Server, d.Cfg.LDAP.Port))
 	if err != nil {
 		return "", err
 	}
 	defer l.Close()
 
-	// Bind with the read-only-admin credentials
-	err = l.Bind("cn=read-only-admin,dc=example,dc=com", "password")
-	if err != nil {
-		return "", err
-	}
-
 	// Search for the user's DN
 	searchRequest := ldap.NewSearchRequest(
-		"dc=example,dc=com",
-		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+		d.Cfg.LDAP.UserDN,
+		ldap.ScopeWholeSubtree,
+		ldap.NeverDerefAliases,
+		0,
+		0,
+		false,
 		fmt.Sprintf("(uid=%s)", username),
 		[]string{"dn"},
 		nil,
@@ -41,12 +40,14 @@ func LdapAuth(username string, password string) (string, error) {
 	// Bind as the user
 	userDN := sr.Entries[0].DN
 	err = l.Bind(userDN, password)
+
 	if err != nil {
 		return "", err
 	}
 
 	// Authentication successful!
 	fmt.Println("Authenticated successfully")
+	fmt.Println(userDN)
 
 	return userDN, nil
 }

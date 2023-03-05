@@ -20,6 +20,7 @@ type Config struct {
 	PemLoc   string
 	KeyLoc   string
 	Database Database
+	LDAP     LDAP
 }
 
 type Database struct {
@@ -28,4 +29,10 @@ type Database struct {
 	Service  string
 	Username string
 	Password string
+}
+
+type LDAP struct {
+	Server string
+	Port   string
+	UserDN string
 }

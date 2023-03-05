@@ -27,7 +27,7 @@ func Init() (*Dependencies, error) {
 		return nil, err
 	}
 	fmt.Println("DB CONNECTED")
-
+	fmt.Println(&curCfg)
 	return &Dependencies{
 		Cfg: &curCfg,
 		Db:  db,
@@ -53,7 +53,7 @@ func loadCfg() (*MainConfig, error) {
 
 func connectDb(cfg *Database) (*sql.DB, error) {
 
-	//os.Setenv("NLS_LANG", "AMERICAN_AMERICA.UTF8")
+	//os.Setenv("NLS_LANG", "AMERICAN_AMERICA.UTF8") // wtf
 
 	con := fmt.Sprintf("oracle://%s:%s@%s:%s/%s?charset=utf8",
 		cfg.Username,

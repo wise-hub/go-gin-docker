@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"fmt"
 	"ginws/config"
 	"ginws/helpers"
@@ -17,44 +16,45 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 		login := model.Login{}
 
 		if err := c.ShouldBind(&login); err != nil {
+			fmt.Println("not bound json")
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
 
 		if !helpers.IsValidUsername(*&login.Username) {
-			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password"})
+			fmt.Println("invalid username")
+			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (1)"})
 			return
 		}
 
-		loginCheck, err := repository.UserLoginRepo(d.Db, *&login.Username, *&login.Password)
-
-		if err != nil {
-			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password"})
-				return
-			}
-			panic(err)
-		}
+		loginCheck := repository.ValidateUserAtDb(d.Db, *&login.Username)
 
 		res := gin.H{
-			"result": "Invalid username or password",
+			"result": "Invalid username or password (2)",
 		}
 
-		if loginCheck >= 1 {
+		if loginCheck {
 
-			// "einstein", "password"
+			// use this u/p for ldap login -> "einstein", "password"
 
-			userDN, err := helpers.LdapAuth(*&login.Username, *&login.Password)
+			_, err := helpers.LdapAuth(*&d, *&login.Username, *&login.Password)
 
 			if err != nil {
-				fmt.Printf("Authentication failed: %v\n", err)
-			} else {
-				fmt.Printf("Authenticated successfully as %s\n", userDN)
+				fmt.Println("Authentication failed: %v\n", err)
+				fmt.Println("auth failed")
+				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (3)"})
+				return
 			}
+			//remoteAddr := strings.Split(c.Request.RemoteAddr, ":")[0]
 
-			fmt.Println(userDN)
+			remoteAddr := helpers.GetRemoteAddr(*&c)
+			token, err := repository.InsertNewToken(d.Db, *&login.Username, remoteAddr)
 
-			token := helpers.GenerateAccessToken()
+			if err != nil {
+				fmt.Println("user table update failed")
+				c.JSON(http.StatusOK, gin.H{"result": "wtf"})
+				return
+			}
 
 			res["result"] = "OK"
 			res["access_token"] = token

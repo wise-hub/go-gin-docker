@@ -11,11 +11,18 @@ import (
 
 func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		// /////////////////////////////////////////
 		// AUTHORIZATION
 		// /////////////////////////////////////////
-		if !helpers.IsValidAccessToken(c) {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized"})
+		token := helpers.FetchValidTokenOffline(c)
+
+		if token == "0" {
+			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
+			return
+		}
+		if !repository.ValidateTokenAtDb(d.Db, token) {
+			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (2)"})
 			return
 		}
 		// ////////////////////////////////////////
