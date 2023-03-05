@@ -34,5 +34,5 @@ List the ready features here:
 5. Use Postman collection (GinWs.postman_collection.json) for testing
 
 ## Usage
-Do not expose this service directly to the end users, as no security is implemented
-Deploy with nginx or other reverse proxy/load balancing/WAF service where the main network security logic is implemented
+- Do not expose this service directly to the end users, as no security is implemented
+- Deploy with nginx or other reverse proxy/load balancing/WAF service where the main network security logic is implemented
