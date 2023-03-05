@@ -1,5 +1,5 @@
 # Go Gin Dockerized
-> Simple and Fast API CRUD service 
+> Simple and Fast API CRUD Service with LDAP Authentication
 
 ## Table of Contents
 * [General Info](#general-information)
@@ -23,16 +23,16 @@
 ## Features
 List the ready features here:
 - LDAP Login
-- Logged-in user authentication (token-based)
+- Logged-in user authentication (token-based, offline and online validation)
 - Common CRUD services
 
 ## Setup
-1. Install Go 1.19 and download DEV VM with Oracle database. Use Virtual Box or other VM software.
-2. Set-up the DB, create your schema, create the tables using the DDL in db.sql.
-3. Update config.json with connection parameters and login parameters.
-4. Follow the instructions in instr.txt.
-5. Use Postman collection (GinWs.postman_collection.json) for testing
+1. Install Go 1.19 and Docker
+2. Download Dev VM with Oracle database. Use Virtual Box or other VM software
+3. Set-up the DB, create your schema, create the tables using the DDL in setup/db.sql
+4. Update config.json with connection parameters and login parameters
+5. Follow the instructions in setup/instr.txt
+6. Use Postman collection for testing (setup/GinWs.postman_collection.json)
 
 ## Usage
-- Do not expose this service directly to the end users, as no security is implemented
-- Deploy with nginx or other reverse proxy/load balancing/WAF service where the main network security logic is implemented
+- Deploy with nginx or other reverse proxy/load balancing/WAF service

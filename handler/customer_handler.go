@@ -6,7 +6,6 @@ import (
 	"ginws/helpers"
 	"ginws/repository"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,22 +14,19 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// /////////////////////////////////////////
-		// AUTHORIZATION
+		// TOKEN AUTHENTICATION
 		// /////////////////////////////////////////
+
+		// OFFLINE - decrypts and checks
 		tokenData, err := helpers.ValidateTokenFull(c)
-
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (0)"})
+			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
 			return
 		}
 
-		if tokenData.User == "" {
+		// ONLINE - checks in DB. COMMENT it for fewer DB I/O
+		if !repository.ValidateTokenAtDb(d.Db, tokenData.Token) {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
-			return
-		}
-
-		if tokenData.ExpDate.Before(time.Now()) {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (2)"})
 			return
 		}
 		// ////////////////////////////////////////

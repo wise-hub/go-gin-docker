@@ -28,7 +28,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
-		//loginCheck := repository .ValidateUserAtDb(d.Db, login.Username)
+		//loginCheck := repository.ValidateUserAtDb(d.Db, login.Username)
 		role, err := repository.GetRoleFromUser(d.Db, login.Username)
 
 		if err != nil {

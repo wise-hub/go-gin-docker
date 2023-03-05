@@ -104,6 +104,7 @@ func DecryptData(token string) (*TokenData, error) {
 	tokenData.ExpDate = expDate
 	tokenData.User = parts[0]
 	tokenData.Role = parts[1]
+	tokenData.Token = token
 
 	return &tokenData, nil
 }
