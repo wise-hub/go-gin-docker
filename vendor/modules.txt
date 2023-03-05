@@ -1,3 +1,6 @@
+# github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e
+## explicit
+github.com/Azure/go-ntlmssp
 # github.com/bytedance/sonic v1.8.0
 ## explicit; go 1.15
 github.com/bytedance/sonic
@@ -32,6 +35,12 @@ github.com/gin-gonic/gin/binding
 github.com/gin-gonic/gin/internal/bytesconv
 github.com/gin-gonic/gin/internal/json
 github.com/gin-gonic/gin/render
+# github.com/go-asn1-ber/asn1-ber v1.5.4
+## explicit; go 1.13
+github.com/go-asn1-ber/asn1-ber
+# github.com/go-ldap/ldap/v3 v3.4.4
+## explicit; go 1.14
+github.com/go-ldap/ldap/v3
 # github.com/go-playground/locales v0.14.1
 ## explicit; go 1.17
 github.com/go-playground/locales
@@ -115,6 +124,7 @@ github.com/ugorji/go/codec
 golang.org/x/arch/x86/x86asm
 # golang.org/x/crypto v0.5.0
 ## explicit; go 1.17
+golang.org/x/crypto/md4
 golang.org/x/crypto/sha3
 # golang.org/x/net v0.7.0
 ## explicit; go 1.17

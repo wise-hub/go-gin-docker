@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 func UserLoginRepo(d *sql.DB, username string, password string) (int, error) {
@@ -22,8 +21,6 @@ func UserLoginRepo(d *sql.DB, username string, password string) (int, error) {
 		}
 		panic(err.Error())
 	}
-
-	fmt.Println("Name:", result)
 
 	return result, nil
 }

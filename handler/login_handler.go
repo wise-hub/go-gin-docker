@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"ginws/config"
 	"ginws/helpers"
 	"ginws/model"
@@ -20,12 +21,12 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
-		if !helpers.IsValidUsername(login.Username) {
+		if !helpers.IsValidUsername(*&login.Username) {
 			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password"})
 			return
 		}
 
-		loginCheck, err := repository.UserLoginRepo(d.Db, login.Username, login.Password)
+		loginCheck, err := repository.UserLoginRepo(d.Db, *&login.Username, *&login.Password)
 
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -40,9 +41,20 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 
 		if loginCheck >= 1 {
+
+			// "einstein", "password"
+
+			userDN, err := helpers.LdapAuth(*&login.Username, *&login.Password)
+
+			if err != nil {
+				fmt.Printf("Authentication failed: %v\n", err)
+			} else {
+				fmt.Printf("Authenticated successfully as %s\n", userDN)
+			}
+
+			fmt.Println(userDN)
+
 			token := helpers.GenerateAccessToken()
-			// create token service, save it and return it
-			// to do
 
 			res["result"] = "OK"
 			res["access_token"] = token

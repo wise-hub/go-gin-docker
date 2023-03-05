@@ -34,6 +34,8 @@ func GenerateAccessToken() string {
 
 func IsValidAccessToken(c *gin.Context) bool {
 
+	// to do - add database operations: select from table and check expiration datetime
+
 	authHeader := c.Request.Header.Get("Authorization")
 
 	if authHeader == "" {

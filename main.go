@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"ginws/config"
 	"ginws/routes"
 
@@ -9,15 +8,11 @@ import (
 )
 
 func main() {
-
 	d, err := config.Init()
 	if err != nil {
 		panic(err)
 	}
 
 	r := routes.Routes(d)
-
-	fmt.Println("ENV: " + *&d.Cfg.EnvType)
-
 	r.RunTLS(":"+d.Cfg.Port, d.Cfg.PemLoc, d.Cfg.KeyLoc)
 }
