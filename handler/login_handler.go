@@ -7,6 +7,7 @@ import (
 	"ginws/model"
 	"ginws/repository"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
-		//loginCheck := repository.ValidateUserAtDb(d.Db, login.Username)
+		//loginCheck := repository .ValidateUserAtDb(d.Db, login.Username)
 		role, err := repository.GetRoleFromUser(d.Db, login.Username)
 
 		if err != nil {
@@ -52,12 +53,20 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (3)"})
 				return
 			}
-			//remoteAddr := strings.Split(c.Request.RemoteAddr, ":")[0]
+
+			expirationDate := time.Now().Add(time.Hour)
+
+			fmt.Printf("%s - %s - %s\n", login.Username, role, expirationDate.Format(time.RFC3339))
+
+			token, err := helpers.EncryptData(login.Username, role, expirationDate)
+			if err != nil {
+				panic(err)
+			}
 
 			remoteAddr := helpers.GetRemoteAddr(c)
-			token, err := repository.InsertNewToken(d.Db, login.Username, role, remoteAddr)
+			tokenInserted, err := repository.InsertNewToken(d.Db, login.Username, token, remoteAddr)
 
-			if err != nil {
+			if err != nil || !tokenInserted {
 				fmt.Println("user table update failed")
 				c.JSON(http.StatusOK, gin.H{"result": "wtf"})
 				return

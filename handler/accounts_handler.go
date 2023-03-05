@@ -5,6 +5,7 @@ import (
 	"ginws/helpers"
 	"ginws/repository"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,13 +16,19 @@ func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 		// /////////////////////////////////////////
 		// AUTHORIZATION
 		// /////////////////////////////////////////
-		token := helpers.FetchValidTokenOffline(c)
+		tokenData, err := helpers.ValidateTokenFull(c)
 
-		if token == "0" {
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (0)"})
+			return
+		}
+
+		if tokenData.User == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
 			return
 		}
-		if !repository.ValidateTokenAtDb(d.Db, token) {
+
+		if tokenData.ExpDate.Before(time.Now()) {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (2)"})
 			return
 		}
@@ -40,6 +47,7 @@ func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 			panic(err)
 		}
 
+		// handle zero accounts
 		if len(accountsList) == 0 {
 			c.JSON(http.StatusOK, gin.H{"result": "No accounts found"})
 			return

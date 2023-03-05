@@ -20,16 +20,6 @@ func GetAccountsRepo(d *sql.DB, customer_id string) ([]model.Account, error) {
 	}
 	defer rows.Close()
 
-	// below code gives ORA-00911: invalid character, hmm
-	////////////////////////////////////////////////////
-	// query := "SELECT iban, balance FROM accounts WHERE customer_id = ?"
-
-	// rows, err := d.Query(query, customer_id)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
-
 	var accounts []model.Account
 	for rows.Next() {
 		var account model.Account

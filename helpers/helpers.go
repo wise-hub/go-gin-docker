@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -20,6 +21,12 @@ type AccessToken struct {
 	ExpDate  int64  `json:"exp"`
 	Role     string `json:"role"`
 	jwt.StandardClaims
+}
+
+type TokenData struct {
+	User    string
+	Role    string
+	ExpDate time.Time
 }
 
 func EncodeAccessToken(username string, expiration time.Time, role string, secretKey []byte) (string, error) {
@@ -65,6 +72,43 @@ func DecodeAccessToken(tokenString string, secretKey []byte) (*AccessToken, erro
 	}
 
 	return claims, nil
+}
+
+func ValidateTokenFull(c *gin.Context) (*TokenData, error) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+
+	if authHeader == "" {
+		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
+		fmt.Println("1")
+		return nil, errors.New("Invalid Token (0)")
+	}
+
+	authHeaderParts := strings.Split(authHeader, " ")
+	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
+		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+		fmt.Println("2")
+		return nil, errors.New("Invalid Token (1)")
+
+	}
+
+	token := authHeaderParts[1]
+
+	if len(token) > 168 { // for len 32 user and len 32 role + standard datetime
+		return nil, errors.New("Invalid Token (2)")
+	}
+
+	match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\=\_\+]+$`, token)
+	if err != nil || !match {
+		return nil, errors.New("Invalid Token (3)")
+	}
+
+	TokenData, err := DecryptData(token)
+	if err != nil {
+		return nil, errors.New("Invalid Token (4)")
+	}
+
+	return TokenData, nil
 }
 
 func FetchValidTokenOffline(c *gin.Context) string {

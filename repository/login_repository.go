@@ -101,7 +101,31 @@ func ValidateTokenAtDb(d *sql.DB, token string) bool {
 	return true
 }
 
-func InsertNewToken(d *sql.DB, username string, role string, ipAddr string) (string, error) {
+func InsertNewToken(d *sql.DB, username string, token string, ipAddr string) (bool, error) {
+
+	updStmt, err := d.Prepare(`update users 
+	set last_login_dt = sysdate, 
+	session_expiry_dt = sysdate+1/24, 
+	last_login_ip = :1,
+	token = :2
+	where username = :3 `)
+
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = updStmt.Close()
+	}()
+
+	_, err = updStmt.Exec(ipAddr, token, username)
+	if err != nil {
+		panic(err)
+	}
+
+	return true, nil
+}
+
+func InsertNewTokenCreateToken(d *sql.DB, username string, role string, ipAddr string) (string, error) {
 
 	// tokenBytes := make([]byte, 32)
 	// _, err := rand.Read(tokenBytes)
