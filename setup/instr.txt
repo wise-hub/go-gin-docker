@@ -1,5 +1,5 @@
 # build image
-docker build --rm -f dockerfile -t gin-docker:latest .
+docker build --rm -f setup/dockerfile -t gin-docker-XXX:latest .
 
 # run container from image
 docker run -d --restart=always -p 8443:4444 gin-docker
@@ -22,3 +22,10 @@ docker logs container_id
 # add regular user to use docker 
 sudo setfacl -m user:$USER:rw /var/run/docker.sock
 
+#### shell stuff
+sudo apt install zsh 
+chsh -s $(which zsh)
+log out log in
+which $0
+which $SHELL
+sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
