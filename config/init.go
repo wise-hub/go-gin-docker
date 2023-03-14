@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -66,6 +67,9 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.SetMaxOpenConns(50)
+	db.SetMaxIdleConns(40)
+	db.SetConnMaxLifetime(time.Hour)
 
 	return db, nil
 }

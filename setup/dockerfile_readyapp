@@ -11,4 +11,4 @@ COPY /cert cert/
 
 CMD [ "./app" ]
 
-EXPOSE 4444
+EXPOSE 8000 

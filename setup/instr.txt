@@ -1,5 +1,7 @@
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+
 # build image
-docker build --rm -f setup/dockerfile -t gin-docker-XXX:latest .
+docker build --rm -f setup/dockerfile_readyapp -t gin-docker-XXX:latest .
 
 # run container from image
 docker run -d --restart=always -p 8443:4444 gin-docker

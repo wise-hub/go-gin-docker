@@ -33,6 +33,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		if err != nil {
 			fmt.Println("role fetch failed")
+			fmt.Println(err)
 			c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (1)"})
 			return
 		}
@@ -50,6 +51,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			if err != nil {
 				//fmt.Println("Authentication failed: %v\n", err)
 				fmt.Println("Authenticaiton failed")
+				fmt.Println(err)
 				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (3)"})
 				return
 			}
