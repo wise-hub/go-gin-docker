@@ -78,7 +78,7 @@ func GetUserFromToken(d *sql.DB, token string) bool {
 	return true
 }
 
-func ValidateTokenAtDb(d *sql.DB, token string) bool {
+func ValidateTokenOnline(d *sql.DB, token string) bool {
 	// check if token exists and user owner is active
 	stmt, err := d.Prepare("SELECT count(1) cnt from users where token = :1 and user_status = 'E'")
 	if err != nil {

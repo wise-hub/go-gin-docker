@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"ginws/config"
 	"ginws/helpers"
 	"ginws/repository"
@@ -16,19 +17,20 @@ func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 		// TOKEN AUTHENTICATION
 		// /////////////////////////////////////////
 
-		// OFFLINE - decrypts and checks
-		tokenData, err := helpers.ValidateTokenFull(c)
+		tokenParams, err := ValidateToken(c, d)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
 			return
 		}
-
-		// ONLINE - checks in DB. COMMENT it for fewer DB I/O
-		if !repository.ValidateTokenAtDb(d.Db, tokenData.Token) {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
-			return
-		}
 		// ////////////////////////////////////////
+
+		// /////////////////////////////////////////
+		// ROLE CHECK
+		// /////////////////////////////////////////
+
+		if tokenParams.Role == "ADMIN" {
+			fmt.Println("ADMIN ROLE")
+		}
 
 		// validate customer id
 		id := c.Param("id")

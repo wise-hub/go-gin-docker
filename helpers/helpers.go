@@ -1,97 +1,12 @@
 package helpers
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-type TokenData struct {
-	Token   string
-	User    string
-	Role    string
-	ExpDate time.Time
-}
-
-func ValidateTokenFull(c *gin.Context) (*TokenData, error) {
-
-	authHeader := c.Request.Header.Get("Authorization")
-
-	if authHeader == "" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-		fmt.Println("1")
-		return nil, errors.New("Unauthorized (0)")
-	}
-
-	authHeaderParts := strings.Split(authHeader, " ")
-	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		fmt.Println("2")
-		return nil, errors.New("Unauthorized (1)")
-
-	}
-
-	token := authHeaderParts[1]
-
-	if len(token) > 168 { // for len 32 user and len 32 role + standard datetime
-		return nil, errors.New("Unauthorized (2)")
-	}
-
-	match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\=\_\+]+$`, token)
-	if err != nil || !match {
-		return nil, errors.New("Unauthorized (3)")
-	}
-
-	TokenData, err := DecryptData(token)
-	if err != nil {
-		return nil, errors.New("Unauthorized (4)")
-	}
-
-	// OFFLINE - checks if token is expired (offline)
-	if TokenData.ExpDate.Before(time.Now()) {
-		return nil, errors.New("Unauthorized (5)")
-	}
-
-	return TokenData, nil
-}
-
-func FetchValidTokenOffline(c *gin.Context) string {
-
-	// to do - add database operations: select from table and check expiration datetime
-
-	authHeader := c.Request.Header.Get("Authorization")
-
-	if authHeader == "" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-		return "0"
-	}
-
-	authHeaderParts := strings.Split(authHeader, " ")
-	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		return "0"
-	}
-
-	token := authHeaderParts[1]
-
-	if len(token) != 155 {
-		return "0"
-	}
-
-	match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-]+$`, token)
-	if err != nil || !match {
-		return "0"
-	}
-
-	return token
-}
-
-/*  -------------------------------------  */
 
 func GetRemoteAddr(c *gin.Context) string {
 

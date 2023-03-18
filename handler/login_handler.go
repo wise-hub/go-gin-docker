@@ -18,7 +18,8 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		if err := c.ShouldBind(&login); err != nil {
 			fmt.Println("not bound json")
-			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			c.JSON(http.StatusBadRequest,
+				gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
 
@@ -60,7 +61,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 
 			fmt.Printf("%s - %s - %s\n", login.Username, role, expirationDate.Format(time.RFC3339))
 
-			token, err := helpers.EncryptData(login.Username, role, expirationDate)
+			token, err := EncryptToken(login.Username, role)
 			if err != nil {
 				panic(err)
 			}
