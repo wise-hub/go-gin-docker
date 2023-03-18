@@ -34,6 +34,7 @@ func GetCustAccHandler(d *config.Dependencies) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"result": "Invalid customer ID"})
 			return
 		}
+		//////////////////////////////////////////////////////////////
 
 		// fetch customer data
 		custAccData, err := repository.GetCustAccRepo(d.Db, id)

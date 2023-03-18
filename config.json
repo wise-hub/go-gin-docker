@@ -6,6 +6,7 @@
             "EnvType": "TEST",
 
             "Port": "8000",
+            "SessionLifetime": "60",
             "Database":  {
                 "Server": "192.168.0.100",
                 "Port": "1521",
@@ -23,6 +24,7 @@
             "EnvType": "PROD",
 
             "Port": "8000",
+            "SessionLifetime": "60",
             "Database":  {
                 "Server": "10.10.10.10",
                 "Port": "1521",

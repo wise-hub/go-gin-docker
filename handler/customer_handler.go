@@ -22,9 +22,7 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 
 		/* REFRESH TOKEN - FOR MAIN API METHOD */
-		errUpdated := repository.UpdateTokenExpiry(d.Db, tokenParams.User)
-		if errUpdated != nil {
-			fmt.Println(errUpdated)
+		if err := repository.UpdateTokenExpiry(d, tokenParams.User); err != nil {
 			c.JSON(http.StatusOK, gin.H{"result": "Authentication Error"})
 			return
 		}
@@ -34,11 +32,25 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 			fmt.Println("ADMIN ROLE")
 			// do stuff
 		}
+		//////////////////////////////////////////////////////////////
 
 		// validate customer id
 		id := c.Param("id")
+
+		/* LOGGER PRELIMINARY */
+		logInfo := &repository.LogInfo{
+			Username:   tokenParams.User,
+			IPAddress:  helpers.GetRemoteAddr(c),
+			Handler:    "GetCustomerHandler",
+			BodyParams: map[string]interface{}{"customer": id},
+		}
+		// end logger
+
 		if !helpers.IsValidCustomerID(id) {
-			c.JSON(http.StatusOK, gin.H{"result": "Invalid customer ID"})
+			errMsg := "Invalid customer ID"
+			logInfo.ErrorInfo = &errMsg
+			repository.LogToOracleDB(d, logInfo)
+			c.JSON(http.StatusOK, gin.H{"result": &errMsg})
 			return
 		}
 
@@ -49,15 +61,20 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
 				return
 			}
+			errMsg := err.Error()
+			logInfo.ErrorInfo = &errMsg
+			err = repository.LogToOracleDB(d, logInfo)
 			panic(err)
 		}
 
-		res := gin.H{
-			"result":       "OK",
-			"customerData": customerData,
+		if err := repository.LogToOracleDB(d, logInfo); err != nil {
+			fmt.Println("Error logging to Oracle database:", err)
 		}
 
-		c.JSON(http.StatusOK, res)
+		c.JSON(http.StatusOK, gin.H{
+			"result":       "OK",
+			"customerData": customerData,
+		})
 
 	}
 }

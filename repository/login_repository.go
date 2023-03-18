@@ -1,10 +1,9 @@
 package repository
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
+	"ginws/config"
 )
 
 func ValidateUserAtDb(d *sql.DB, username string) bool {
@@ -101,14 +100,14 @@ func ValidateTokenOnline(d *sql.DB, token string) bool {
 	return true
 }
 
-func InsertNewToken(d *sql.DB, username string, token string, ipAddr string) (bool, error) {
+func InsertNewToken(d *config.Dependencies, username string, token string, ipAddr string) (bool, error) {
 
-	updStmt, err := d.Prepare(`update users 
+	updStmt, err := d.Db.Prepare(`update users 
 	set last_login_dt = sysdate, 
-	session_expiry_dt = sysdate+1/24, 
-	last_login_ip = :1,
-	token = :2
-	where username = :3 `)
+	session_expiry_dt = sysdate + NUMTODSINTERVAL(:1, 'MINUTE'),
+	last_login_ip = :2,
+	token = :3
+	where username = :4 `)
 
 	if err != nil {
 		panic(err)
@@ -117,7 +116,7 @@ func InsertNewToken(d *sql.DB, username string, token string, ipAddr string) (bo
 		_ = updStmt.Close()
 	}()
 
-	_, err = updStmt.Exec(ipAddr, token, username)
+	_, err = updStmt.Exec(d.Cfg.SessionLifetime, ipAddr, token, username)
 	if err != nil {
 		panic(err)
 	}
@@ -125,10 +124,10 @@ func InsertNewToken(d *sql.DB, username string, token string, ipAddr string) (bo
 	return true, nil
 }
 
-func UpdateTokenExpiry(d *sql.DB, username string) error {
+func UpdateTokenExpiry(d *config.Dependencies, username string) error {
 
-	updStmt, err := d.Prepare(`update users 
-	set session_expiry_dt = sysdate+1/24
+	updStmt, err := d.Db.Prepare(`update users 
+	set session_expiry_dt = sysdate + interval '1' hour
 	where username = :1`)
 
 	if err != nil {
@@ -144,48 +143,4 @@ func UpdateTokenExpiry(d *sql.DB, username string) error {
 	}
 
 	return nil
-}
-
-func InsertNewTokenCreateToken(d *sql.DB, username string, role string, ipAddr string) (string, error) {
-
-	// tokenBytes := make([]byte, 32)
-	// _, err := rand.Read(tokenBytes)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// token := hex.EncodeToString(tokenBytes)
-
-	b := make([]byte, 48) // 48 bytes = 64 chars
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
-	}
-	token := base64.URLEncoding.EncodeToString(b)[:64] // strip padding
-
-	// set token, expiry and last login
-	/*
-		table structure
-		id, username, role, user_status, token, session_expiry_dt, last_login_dt
-	*/
-	updStmt, err := d.Prepare(`update users 
-	set last_login_dt = sysdate, 
-	session_expiry_dt = sysdate+1/24, 
-	last_login_ip = :1,
-	token = :2
-	where username = :3 `)
-
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = updStmt.Close()
-	}()
-
-	_, err = updStmt.Exec(ipAddr, token, username)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(token)
-	fmt.Println(len(token))
-
-	return token, nil
 }

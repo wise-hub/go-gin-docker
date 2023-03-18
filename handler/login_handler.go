@@ -67,7 +67,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			}
 
 			remoteAddr := helpers.GetRemoteAddr(c)
-			tokenInserted, err := repository.InsertNewToken(d.Db, login.Username, token, remoteAddr)
+			tokenInserted, err := repository.InsertNewToken(d, login.Username, token, remoteAddr)
 
 			if err != nil || !tokenInserted {
 				fmt.Println("user table update failed")

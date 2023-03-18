@@ -15,10 +15,11 @@ type MainConfig struct {
 }
 
 type Config struct {
-	EnvType  string
-	Port     string
-	Database Database
-	LDAP     LDAP
+	EnvType         string
+	SessionLifetime string
+	Port            string
+	Database        Database
+	LDAP            LDAP
 }
 
 type Database struct {

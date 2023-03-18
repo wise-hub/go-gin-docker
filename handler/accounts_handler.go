@@ -32,6 +32,7 @@ func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"result": "Invalid customer ID"})
 			return
 		}
+		//////////////////////////////////////////////////////////////
 
 		// fetch accounts
 		accountsList, err := repository.GetAccountsRepo(d.Db, id)
