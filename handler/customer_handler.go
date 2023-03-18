@@ -49,7 +49,7 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		if !helpers.IsValidCustomerID(id) {
 			errMsg := "Invalid customer ID"
 			logInfo.ErrorInfo = &errMsg
-			repository.LogToOracleDB(d, logInfo)
+			repository.SaveLog(d, logInfo)
 			c.JSON(http.StatusOK, gin.H{"result": &errMsg})
 			return
 		}
@@ -63,11 +63,11 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 			}
 			errMsg := err.Error()
 			logInfo.ErrorInfo = &errMsg
-			err = repository.LogToOracleDB(d, logInfo)
+			err = repository.SaveLog(d, logInfo)
 			panic(err)
 		}
 
-		if err := repository.LogToOracleDB(d, logInfo); err != nil {
+		if err := repository.SaveLog(d, logInfo); err != nil {
 			fmt.Println("Error logging to Oracle database:", err)
 		}
 

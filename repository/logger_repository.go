@@ -61,7 +61,7 @@ func createNode(key string, value interface{}) XMLNode {
 	return node
 }
 
-func LogToOracleDB(d *config.Dependencies, logInfo *LogInfo) error {
+func SaveLog(d *config.Dependencies, logInfo *LogInfo) error {
 
 	sqlStatement := `INSERT INTO log_info (log_id, username, ip_address, handler, body_params, error_info)
                      VALUES (log_info_seq.nextval, :1, :2, :3, :4, :5)`
