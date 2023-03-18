@@ -5,7 +5,7 @@ import (
 	"ginws/model"
 )
 
-func GetCustomerRepo(d *sql.DB, customer_id string) (model.Customer, error) {
+func CustomerRepo(d *sql.DB, customer_id string) (model.Customer, error) {
 
 	stmt, err := d.Prepare("SELECT customer_id, name, egn, address from customers where customer_id = :1")
 	if err != nil {

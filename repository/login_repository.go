@@ -116,7 +116,7 @@ func InsertNewToken(d *config.Dependencies, username string, token string, ipAdd
 		_ = updStmt.Close()
 	}()
 
-	_, err = updStmt.Exec(d.Cfg.SessionLifetime, ipAddr, token, username)
+	_, err = updStmt.Exec(d.Cfg.SessionLifetimeMins, ipAddr, token, username)
 	if err != nil {
 		panic(err)
 	}

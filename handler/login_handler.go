@@ -75,6 +75,18 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 				return
 			}
 
+			logInfo := &repository.LogInfo{
+				Username:  login.Username,
+				IPAddress: helpers.GetRemoteAddr(c),
+				Handler:   "LoginHandler",
+				//BodyParams: map[string]interface{}{"customer": id},
+			}
+
+			if err := repository.SaveLog(d, logInfo); err != nil {
+				fmt.Println("Error logging to Oracle database:", err)
+				panic(err)
+			}
+
 			res["result"] = "OK"
 			res["access_token"] = token
 		}

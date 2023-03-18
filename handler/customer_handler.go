@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
+func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		/* TOKEN AUTHENTICATION */
@@ -55,20 +55,20 @@ func GetCustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 
 		// fetch customer data
-		customerData, err := repository.GetCustomerRepo(d.Db, id)
+		customerData, err := repository.CustomerRepo(d.Db, id)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
-				return
-			}
 			errMsg := err.Error()
 			logInfo.ErrorInfo = &errMsg
-			err = repository.SaveLog(d, logInfo)
+			repository.SaveLog(d, logInfo)
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
+			}
 			panic(err)
 		}
 
 		if err := repository.SaveLog(d, logInfo); err != nil {
 			fmt.Println("Error logging to Oracle database:", err)
+			panic(err)
 		}
 
 		c.JSON(http.StatusOK, gin.H{

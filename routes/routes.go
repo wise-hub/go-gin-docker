@@ -13,9 +13,9 @@ func Routes(d *config.Dependencies) *gin.Engine {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler(d))
-		api.GET("/customer/:id", handler.GetCustomerHandler(d))
-		api.GET("/accounts/:id", handler.GetAccountsHandler(d))
-		api.GET("/customer-accounts/:id", handler.GetCustAccHandler(d))
+		api.GET("/customer/:id", handler.CustomerHandler(d))
+		api.GET("/accounts/:id", handler.AccountsHandler(d))
+		api.GET("/customer-accounts/:id", handler.CustAccHandler(d))
 	}
 
 	return r
