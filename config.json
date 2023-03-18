@@ -5,9 +5,7 @@
         [{
             "EnvType": "TEST",
 
-            "Port": "4444",
-            "PemLoc": "./cert/server.pem",
-            "KeyLoc": "./cert/server.key",
+            "Port": "8000",
             "Database":  {
                 "Server": "192.168.0.100",
                 "Port": "1521",
@@ -24,9 +22,7 @@
         {
             "EnvType": "PROD",
 
-            "Port": "4444",
-            "PemLoc": "./cert/server.pem",
-            "KeyLoc": "./cert/server.key",
+            "Port": "8000",
             "Database":  {
                 "Server": "10.10.10.10",
                 "Port": "1521",

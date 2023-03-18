@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"ginws/config"
-	"ginws/model"
 	"ginws/repository"
 	"regexp"
 	"strings"
@@ -17,13 +16,18 @@ import (
 )
 
 const (
-	secretKey1      = "XmBkb3mjBMXUEw8iRZjAtWApn8RU5wkh"
+	secretKey1      = "0Fdkw7dFuW8LkIi359vGkwp0x7Yej3vZ"
 	gcmNonceLength  = 12  // GCM recommends a 12-byte nonce
 	gcmTagLength    = 128 // GCM default tag length
-	plaintextLength = 48  // plaintext with padding
+	plaintextLength = 48  // max length of plaintext
 )
 
-func ValidateToken(c *gin.Context, d *config.Dependencies) (*model.TokenParams, error) {
+type TokenParams struct {
+	User string
+	Role string
+}
+
+func ValidateToken(c *gin.Context, d *config.Dependencies) (*TokenParams, error) {
 
 	authHeader := c.Request.Header.Get("Authorization")
 
@@ -96,7 +100,7 @@ func EncryptToken(username, role string) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(cipherTextWithNonce), nil
 }
 
-func decryptToken(token string) (*model.TokenParams, error) {
+func decryptToken(token string) (*TokenParams, error) {
 	cipherTextWithNonce, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil {
 		return nil, err
@@ -130,7 +134,7 @@ func decryptToken(token string) (*model.TokenParams, error) {
 		return nil, errors.New("Invalid plaintext")
 	}
 
-	tokenParams := &model.TokenParams{
+	tokenParams := &TokenParams{
 		User: parts[0],
 		Role: parts[1],
 	}

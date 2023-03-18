@@ -17,8 +17,6 @@ type MainConfig struct {
 type Config struct {
 	EnvType  string
 	Port     string
-	PemLoc   string
-	KeyLoc   string
 	Database Database
 	LDAP     LDAP
 }
