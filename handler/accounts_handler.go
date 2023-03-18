@@ -13,23 +13,17 @@ import (
 func GetAccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		// /////////////////////////////////////////
-		// TOKEN AUTHENTICATION
-		// /////////////////////////////////////////
-
+		/* TOKEN AUTHENTICATION */
 		tokenParams, err := ValidateToken(c, d)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
 			return
 		}
-		// ////////////////////////////////////////
 
-		// /////////////////////////////////////////
-		// ROLE CHECK
-		// /////////////////////////////////////////
-
+		/* ROLE CHECK */
 		if tokenParams.Role == "ADMIN" {
 			fmt.Println("ADMIN ROLE")
+			// do stuff
 		}
 
 		// validate customer id

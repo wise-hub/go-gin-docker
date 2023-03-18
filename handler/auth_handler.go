@@ -32,20 +32,17 @@ func ValidateToken(c *gin.Context, d *config.Dependencies) (*TokenParams, error)
 	authHeader := c.Request.Header.Get("Authorization")
 
 	if authHeader == "" {
-		fmt.Println("1")
 		return nil, errors.New("Unauthorized (0)")
 	}
 
 	authHeaderParts := strings.Split(authHeader, " ")
 	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		fmt.Println("2")
 		return nil, errors.New("Unauthorized (1)")
-
 	}
 
 	token := authHeaderParts[1]
 
-	if len(token) > 168 { // for len 32 user and len 32 role + standard datetime
+	if len(token) > 128 {
 		return nil, errors.New("Unauthorized (2)")
 	}
 
@@ -60,7 +57,6 @@ func ValidateToken(c *gin.Context, d *config.Dependencies) (*TokenParams, error)
 	}
 
 	if !repository.ValidateTokenOnline(d.Db, token) {
-
 		return nil, errors.New("Unauthorized (5)")
 	}
 

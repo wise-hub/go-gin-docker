@@ -125,6 +125,27 @@ func InsertNewToken(d *sql.DB, username string, token string, ipAddr string) (bo
 	return true, nil
 }
 
+func UpdateTokenExpiry(d *sql.DB, username string) error {
+
+	updStmt, err := d.Prepare(`update users 
+	set session_expiry_dt = sysdate+1/24
+	where username = :1`)
+
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = updStmt.Close()
+	}()
+
+	_, err = updStmt.Exec(username)
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
 func InsertNewTokenCreateToken(d *sql.DB, username string, role string, ipAddr string) (string, error) {
 
 	// tokenBytes := make([]byte, 32)
