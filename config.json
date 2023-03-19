@@ -28,10 +28,10 @@
             "env_type": "PROD",
 
             "port": "8000",
-            "session_lifetime_min": "60",
+            "session_lifetime_mins": "60",
             "token_db_check": "Y",
             "database":  {
-                "server": "10.10.10.10",
+                "server": "ex01.asd.asd.asd",
                 "port": "1521",
                 "service": "sn",
                 "username": "usr",

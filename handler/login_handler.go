@@ -7,7 +7,6 @@ import (
 	"ginws/model"
 	"ginws/repository"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +16,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 		login := &model.Login{}
 
 		if err := c.ShouldBind(&login); err != nil {
-			fmt.Println("not bound json")
+			fmt.Println("Not bound JSON")
 			c.JSON(http.StatusBadRequest,
 				gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
@@ -56,10 +55,6 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 				c.JSON(http.StatusOK, gin.H{"result": "Invalid username or password (3)"})
 				return
 			}
-
-			expirationDate := time.Now().Add(time.Hour)
-
-			fmt.Printf("%s - %s - %s\n", login.Username, role, expirationDate.Format(time.RFC3339))
 
 			token, err := EncryptToken(login.Username, role)
 			if err != nil {

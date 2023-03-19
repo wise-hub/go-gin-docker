@@ -28,7 +28,7 @@ func Init() (*Dependencies, error) {
 		return nil, err
 	}
 	fmt.Println("DB CONNECTED")
-	fmt.Println(&curCfg)
+	//fmt.Println(&curCfg)
 	return &Dependencies{
 		Cfg: &curCfg,
 		Db:  db,
@@ -46,6 +46,10 @@ func loadCfg() (*MainConfig, error) {
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&cfg); err != nil {
+		return nil, err
+	}
+
+	if err := ValidateConfig(&cfg); err != nil {
 		return nil, err
 	}
 

@@ -46,8 +46,8 @@ func LdapAuth(d *config.Dependencies, username string, password string) (string,
 	}
 
 	// Authentication successful!
-	fmt.Println("Authenticated successfully")
-	fmt.Println(userDN)
+	// fmt.Println("Authenticated successfully")
+	// fmt.Println(userDN)
 
 	return userDN, nil
 }

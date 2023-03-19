@@ -74,7 +74,7 @@ func EncryptToken(username, role string) (string, error) {
 		padding = strings.Repeat("0", remainingLength)
 	}
 	plaintext := fmt.Sprintf("%s,%s,%s", username, role, padding)
-	fmt.Println(plaintext) // del after
+	//fmt.Println(plaintext) // del after
 	plainBytes := []byte(plaintext)
 
 	block, err := aes.NewCipher([]byte(secretKey1))
@@ -138,8 +138,8 @@ func decryptToken(token string) (*TokenParams, error) {
 		User: parts[0],
 		Role: parts[1],
 	}
-	fmt.Println(parts[0])
-	fmt.Println(parts[1])
+	//fmt.Println(parts[0])
+	//fmt.Println(parts[1])
 
 	return tokenParams, nil
 }
