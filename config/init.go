@@ -69,7 +69,7 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 	}
 	db.SetMaxOpenConns(50)
 	db.SetMaxIdleConns(40)
-	db.SetConnMaxLifetime(time.Hour)
+	db.SetConnMaxLifetime(time.Minute * 15)
 
 	return db, nil
 }
