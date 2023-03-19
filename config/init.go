@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func Init() (*Dependencies, error) {
@@ -49,7 +50,7 @@ func loadCfg() (*MainConfig, error) {
 		return nil, err
 	}
 
-	if err := ValidateConfig(&cfg); err != nil {
+	if err := validateConfig(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -76,4 +77,12 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 	db.SetConnMaxLifetime(time.Minute * cfg.ConnMaxLifetime)
 
 	return db, nil
+}
+
+func validateConfig(cfg *MainConfig) error {
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return err
+	}
+	return nil
 }

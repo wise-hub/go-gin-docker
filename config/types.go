@@ -11,32 +11,32 @@ type Dependencies struct {
 }
 
 type MainConfig struct {
-	Environment string `validate:"required"`
-	Config      []Config
+	Environment string   `validate:"required,oneof=DEV TEST PROD"`
+	Config      []Config `validate:"required,dive"`
 }
 
 type Config struct {
 	EnvType             string   `json:"env_type" validate:"required"`
-	Port                string   `json:"port" validate:"required"`
-	SessionLifetimeMins string   `json:"session_lifetime_mins" validate:"required"`
-	TokenDbCheck        string   `json:"token_db_check" validate:"required"`
+	Port                string   `json:"port" validate:"required,min=2,max=5,numeric"`
+	SessionLifetimeMins string   `json:"session_lifetime_mins" validate:"required,max=4,numeric"`
+	TokenDbCheck        string   `json:"token_db_check" validate:"required,oneof=Y N"`
 	Database            Database `json:"database" validate:"required"`
 	LDAP                LDAP     `json:"ldap" validate:"required"`
 }
 
 type Database struct {
-	Server          string        `json:"server" validate:"required"`
-	Port            string        `json:"port" validate:"required"`
-	Service         string        `json:"service" validate:"required"`
-	Username        string        `json:"username" validate:"required"`
-	Password        string        `json:"password" validate:"required"`
-	MaxOpenConns    int           `json:"max_open_conns" validate:"required"`
-	MaxIdleConns    int           `json:"max_idle_conns" validate:"required"`
+	Server          string        `json:"server" validate:"required,hostname|ip4_addr"`
+	Port            string        `json:"port" validate:"required,min=2,max=5,numeric"`
+	Service         string        `json:"service" validate:"required,max=20,alphanum"`
+	Username        string        `json:"username" validate:"required,max=30,alphanum"`
+	Password        string        `json:"password" validate:"required,max=50"`
+	MaxOpenConns    int           `json:"max_open_conns" validate:"required,gte=1,lte=500"`
+	MaxIdleConns    int           `json:"max_idle_conns" validate:"required,gte=1,lte=450"`
 	ConnMaxLifetime time.Duration `json:"conn_max_lifetime" validate:"required"`
 }
 
 type LDAP struct {
-	Server string `json:"server" validate:"required"`
-	Port   string `json:"port" validate:"required"`
-	UserDN string `json:"user_dn" validate:"required"`
+	Server string `json:"server" validate:"required,hostname|ip4_addr"`
+	Port   string `json:"port" validate:"required,min=2,max=5,numeric"`
+	UserDN string `json:"user_dn" validate:"required,max=30"`
 }

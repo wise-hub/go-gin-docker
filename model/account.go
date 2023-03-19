@@ -1,6 +1,6 @@
 package model
 
 type Account struct {
-	IBAN    string
-	Balance float32
+	IBAN    string  `json:"iban"`
+	Balance float32 `json:"balance"`
 }

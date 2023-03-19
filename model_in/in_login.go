@@ -1,6 +1,6 @@
-package model
+package model_in
 
-type Login struct {
+type InLogin struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }

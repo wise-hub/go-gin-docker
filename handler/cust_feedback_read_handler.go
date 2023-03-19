@@ -13,7 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
+func CustFeedbackReadHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		/* TOKEN AUTHENTICATION */
@@ -51,13 +51,13 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "GetCustomerHandler",
+			Handler:    "CustFeedbackReadHandler",
 			BodyParams: map[string]interface{}{"customer": id},
 		}
 		// end logger
 
 		// fetch customer data
-		customerData, err := repository.CustomerRepo(d.Db, id.CustomerID)
+		customerData, err := repository.ReadCustFeedback(d.Db, id.CustomerID)
 		if err != nil {
 			errMsg := err.Error()
 			logInfo.ErrorInfo = &errMsg

@@ -55,6 +55,7 @@ func ValidateToken(c *gin.Context, d *config.Dependencies) (*TokenParams, error)
 	if err != nil {
 		return nil, errors.New("Unauthorized (4)")
 	}
+
 	if d.Cfg.TokenDbCheck != "N" {
 		//fmt.Println("TokenCheck entering")
 		if !repository.ValidateTokenOnline(d.Db, token) {

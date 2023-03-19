@@ -13,7 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
+func CustFeedbackAddHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		/* TOKEN AUTHENTICATION */
@@ -25,7 +25,7 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		/* REFRESH TOKEN - FOR MAIN API METHOD */
 		if err := repository.UpdateTokenExpiry(d, tokenParams.User); err != nil {
-			c.JSON(http.StatusOK, gin.H{"result": "Authentication Error"})
+			c.JSON(http.StatusUnauthorized, gin.H{"result": "Authentication Error"})
 			return
 		}
 
@@ -36,13 +36,19 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 		//////////////////////////////////////////////////////////////
 
-		// set the parameters from input data
-		id := &model_in.T{}
-		id.CustomerID = c.Param("id")
+		// set struct
+		custFeedback := &model_in.InCustomerFeedback{}
 
-		// validate input based on struct rules
+		// validate keys (fields)
+		if err := c.ShouldBind(custFeedback); err != nil {
+			fmt.Println("Not bound JSON")
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
+		}
+
+		// validate values
 		validate := validator.New()
-		if err := validate.Struct(id); err != nil {
+		if err := validate.Struct(custFeedback); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
@@ -51,31 +57,30 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "GetCustomerHandler",
-			BodyParams: map[string]interface{}{"customer": id},
+			Handler:    "CustFeedbackAddHandler",
+			BodyParams: map[string]interface{}{"l": custFeedback},
 		}
-		// end logger
 
-		// fetch customer data
-		customerData, err := repository.CustomerRepo(d.Db, id.CustomerID)
-		if err != nil {
+		// insert new feedback record
+		if err := repository.InsertCustFeedback(d.Db, custFeedback, tokenParams.User); err != nil {
 			errMsg := err.Error()
 			logInfo.ErrorInfo = &errMsg
 			repository.SaveLog(d, logInfo)
 			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
+				c.JSON(http.StatusOK, gin.H{"result": "Error (0)"})
 			}
 			panic(err)
 		}
 
+		// save action log to database
 		if err := repository.SaveLog(d, logInfo); err != nil {
 			fmt.Println("Error logging to Oracle database:", err)
 			panic(err)
 		}
 
+		// return json to client
 		c.JSON(http.StatusOK, gin.H{
-			"result":       "OK",
-			"customerData": customerData,
+			"result": "OK",
 		})
 
 	}

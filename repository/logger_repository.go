@@ -30,7 +30,7 @@ func jsonToXML(data []byte) (string, error) {
 		return "", err
 	}
 
-	node := createNode("requestParams", jsonData)
+	node := createNode("l", jsonData)
 
 	xmlData, err := xml.MarshalIndent(node, "", "")
 	if err != nil {

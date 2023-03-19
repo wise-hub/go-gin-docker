@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"ginws/config"
 	"ginws/helpers"
-	"ginws/model"
+	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
 
@@ -13,7 +13,7 @@ import (
 
 func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		login := &model.Login{}
+		login := &model_in.InLogin{}
 
 		if err := c.ShouldBind(&login); err != nil {
 			fmt.Println("Not bound JSON")
