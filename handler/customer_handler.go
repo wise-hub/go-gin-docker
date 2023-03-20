@@ -51,7 +51,7 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "GetCustomerHandler",
+			Handler:    "customer",
 			BodyParams: id,
 		}
 		// end logger

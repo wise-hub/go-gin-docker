@@ -73,7 +73,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 			logInfo := &repository.LogInfo{
 				Username:  login.Username,
 				IPAddress: helpers.GetRemoteAddr(c),
-				Handler:   "LoginHandler",
+				Handler:   "login",
 				//BodyParams: map[string]interface{}{"customer": id},
 			}
 

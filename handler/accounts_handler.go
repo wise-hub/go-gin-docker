@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ginws/config"
 	"ginws/helpers"
+	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
 
@@ -27,18 +28,19 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 
 		// validate customer id
-		id := c.Param("id")
+		id := &model_in.T{}
+		id.CustomerID = c.Param("id")
 
 		/* LOGGER PRELIMINARY */
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "AccountsHandler",
+			Handler:    "accounts",
 			BodyParams: id,
 		}
 		// end logger
 
-		if !helpers.IsValidCustomerID(id) {
+		if !helpers.IsValidCustomerID(id.CustomerID) {
 			errMsg := "Invalid customer ID"
 			logInfo.ErrorInfo = &errMsg
 			repository.SaveLog(d, logInfo)
@@ -48,7 +50,7 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 		//////////////////////////////////////////////////////////////
 
 		// fetch accounts
-		accountsList, err := repository.AccountsRepo(d.Db, id)
+		accountsList, err := repository.AccountsRepo(d.Db, id.CustomerID)
 		if err != nil {
 			errMsg := err.Error()
 			logInfo.ErrorInfo = &errMsg
@@ -58,7 +60,7 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		// handle zero accounts
 		if len(accountsList) == 0 {
-			errMsg := "No accounts foundD"
+			errMsg := "No accounts found"
 			logInfo.ErrorInfo = &errMsg
 			repository.SaveLog(d, logInfo)
 			c.JSON(http.StatusOK, gin.H{"result": errMsg})

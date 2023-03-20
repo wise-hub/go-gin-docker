@@ -35,7 +35,7 @@ func CustAccHandler(d *config.Dependencies) gin.HandlerFunc {
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "GetCustAccHandler",
+			Handler:    "customer-accounts",
 			BodyParams: id,
 		}
 		// end logger

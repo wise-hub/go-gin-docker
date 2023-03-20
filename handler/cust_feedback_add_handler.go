@@ -57,7 +57,7 @@ func CustFeedbackAddHandler(d *config.Dependencies) gin.HandlerFunc {
 		logInfo := &repository.LogInfo{
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "CustFeedbackAddHandler",
+			Handler:    "customer-feedback-add",
 			BodyParams: custFeedback,
 		}
 
