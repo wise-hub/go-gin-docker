@@ -58,7 +58,7 @@ func CustFeedbackAddHandler(d *config.Dependencies) gin.HandlerFunc {
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
 			Handler:    "CustFeedbackAddHandler",
-			BodyParams: map[string]interface{}{"l": custFeedback},
+			BodyParams: custFeedback,
 		}
 
 		// insert new feedback record

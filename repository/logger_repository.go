@@ -13,9 +13,36 @@ type LogInfo struct {
 	Username   string
 	IPAddress  string
 	Handler    string
-	BodyParams map[string]interface{}
+	BodyParams interface{}
 	ErrorInfo  *string
 }
+
+func SaveLog(d *config.Dependencies, lg *LogInfo) error {
+	sqlStatement := `INSERT INTO log_info (log_id, username, ip_address, handler, body_params, error_info)
+                     VALUES (log_info_seq.nextval, :1, :2, :3, :4, :5)`
+
+	bodyParamsJSON, err := json.Marshal(lg.BodyParams)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := d.Db.Prepare(sqlStatement)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = stmt.Close()
+	}()
+
+	_, err = stmt.Exec(lg.Username, lg.IPAddress, lg.Handler, string(bodyParamsJSON), lg.ErrorInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// if needed - XML save below
 
 type XMLNode struct {
 	XMLName xml.Name
@@ -31,7 +58,6 @@ func jsonToXML(data []byte) (string, error) {
 	}
 
 	node := createNode("l", jsonData)
-
 	xmlData, err := xml.MarshalIndent(node, "", "")
 	if err != nil {
 		return "", err
@@ -55,13 +81,15 @@ func createNode(key string, value interface{}) XMLNode {
 			node.Nodes = append(node.Nodes, child)
 		}
 	default:
-		node.Content = fmt.Sprintf("%v", value)
+		if v != "" && v != nil {
+			node.Content = fmt.Sprintf("%v", value)
+		}
 	}
 
 	return node
 }
 
-func SaveLog(d *config.Dependencies, logInfo *LogInfo) error {
+func SaveLogXML(d *config.Dependencies, logInfo *LogInfo) error {
 
 	sqlStatement := `INSERT INTO log_info (log_id, username, ip_address, handler, body_params, error_info)
                      VALUES (log_info_seq.nextval, :1, :2, :3, :4, :5)`

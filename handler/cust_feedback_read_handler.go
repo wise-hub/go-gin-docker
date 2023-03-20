@@ -52,7 +52,7 @@ func CustFeedbackReadHandler(d *config.Dependencies) gin.HandlerFunc {
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
 			Handler:    "CustFeedbackReadHandler",
-			BodyParams: map[string]interface{}{"customer": id},
+			BodyParams: id,
 		}
 		// end logger
 

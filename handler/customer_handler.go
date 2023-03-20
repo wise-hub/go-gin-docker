@@ -52,7 +52,7 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 			Username:   tokenParams.User,
 			IPAddress:  helpers.GetRemoteAddr(c),
 			Handler:    "GetCustomerHandler",
-			BodyParams: map[string]interface{}{"customer": id},
+			BodyParams: id,
 		}
 		// end logger
 
