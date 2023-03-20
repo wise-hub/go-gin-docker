@@ -4,11 +4,18 @@ import (
 	"ginws/config"
 	"ginws/handler"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func Routes(d *config.Dependencies) *gin.Engine {
 	r := gin.Default()
+
+	// same as
+	// config := cors.DefaultConfig()
+	// config.AllowAllOrigins = true
+	// router.Use(cors.New(config))
+	r.Use(cors.Default())
 
 	api := r.Group("/api")
 	{
