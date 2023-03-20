@@ -13,6 +13,9 @@ import (
 
 func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
 		login := &model_in.InLogin{}
 
 		if err := c.ShouldBind(&login); err != nil {

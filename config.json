@@ -5,7 +5,7 @@
         [{
             "env_type": "TEST",
 
-            "port": "8000",
+            "port": "8001",
             "session_lifetime_mins": "60",
             "token_db_check": "Y",
             "database":  {
