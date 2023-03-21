@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"ginws/config"
 	"ginws/repository"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -25,47 +26,6 @@ const (
 type TokenParams struct {
 	User string
 	Role string
-}
-
-func ValidateToken(c *gin.Context, d *config.Dependencies) (*TokenParams, error) {
-
-	authHeader := c.Request.Header.Get("Authorization")
-
-	if authHeader == "" {
-		return nil, errors.New("Unauthorized (0)")
-	}
-
-	authHeaderParts := strings.Split(authHeader, " ")
-	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		return nil, errors.New("Unauthorized (1)")
-	}
-
-	token := authHeaderParts[1]
-
-	if len(token) > 128 {
-		return nil, errors.New("Unauthorized (2)")
-	}
-
-	match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\=\_\+]+$`, token)
-	if err != nil || !match {
-		return nil, errors.New("Unauthorized (3)")
-	}
-
-	tokenParams, err := decryptToken(token)
-	if err != nil {
-		return nil, errors.New("Unauthorized (4)")
-	}
-
-	if d.Cfg.TokenDbCheck != "N" {
-		//fmt.Println("TokenCheck entering")
-		if !repository.ValidateTokenOnline(d.Db, token) {
-			//fmt.Println("TokenCheck FAILED")
-			return nil, errors.New("Unauthorized (5)")
-		}
-		//fmt.Println("TokenCheck successful")
-	}
-
-	return tokenParams, nil
 }
 
 func EncryptToken(username, role string) (string, error) {
@@ -143,4 +103,70 @@ func decryptToken(token string) (*TokenParams, error) {
 	//fmt.Println(parts[1])
 
 	return tokenParams, nil
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func AuthenticateToken(d *config.Dependencies) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.Request.Header.Get("Authorization")
+
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (0)"})
+			return
+		}
+
+		authHeaderParts := strings.Split(authHeader, " ")
+		if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (1)"})
+			return
+		}
+
+		token := authHeaderParts[1]
+
+		if len(token) > 128 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (2)"})
+			return
+		}
+
+		match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\=\_\+]+$`, token)
+		if err != nil || !match {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (3)"})
+			return
+		}
+
+		tokenParams, err := decryptToken(token)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (4)"})
+			return
+		}
+
+		if d.Cfg.TokenDbCheck != "N" {
+			//fmt.Println("TokenCheck entering")
+			if !repository.ValidateTokenOnline(d.Db, token) {
+				//fmt.Println("TokenCheck FAILED")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (5)"})
+				return
+			}
+			//fmt.Println("TokenCheck successful")
+		}
+
+		c.Set("username", tokenParams.User)
+		c.Set("role", tokenParams.Role)
+		c.Next()
+	}
 }

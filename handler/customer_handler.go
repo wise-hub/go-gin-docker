@@ -16,21 +16,14 @@ import (
 func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		/* TOKEN AUTHENTICATION */
-		tokenParams, err := ValidateToken(c, d)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
-			return
-		}
-
 		/* REFRESH TOKEN - FOR MAIN API METHOD */
-		if err := repository.UpdateTokenExpiry(d, tokenParams.User); err != nil {
+		if err := repository.UpdateTokenExpiry(d, c.GetString("username")); err != nil {
 			c.JSON(http.StatusOK, gin.H{"result": "Authentication Error"})
 			return
 		}
 
 		/* ROLE CHECK */
-		if tokenParams.Role == "ADMIN" {
+		if c.GetString("username") == "ADMIN" {
 			fmt.Println("ADMIN ROLE")
 			// do stuff
 		}
@@ -49,7 +42,7 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		/* LOGGER PRELIMINARY */
 		logInfo := &repository.LogInfo{
-			Username:   tokenParams.User,
+			Username:   c.GetString("username"),
 			IPAddress:  helpers.GetRemoteAddr(c),
 			Handler:    "customer",
 			BodyParams: id,

@@ -14,15 +14,8 @@ import (
 func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		/* TOKEN AUTHENTICATION */
-		tokenParams, err := ValidateToken(c, d)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
-			return
-		}
-
 		/* ROLE CHECK */
-		if tokenParams.Role == "ADMIN" {
+		if c.GetString("role") == "ADMIN" {
 			fmt.Println("ADMIN ROLE")
 			// do stuff
 		}
@@ -33,7 +26,7 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		/* LOGGER PRELIMINARY */
 		logInfo := &repository.LogInfo{
-			Username:   tokenParams.User,
+			Username:   c.GetString("username"),
 			IPAddress:  helpers.GetRemoteAddr(c),
 			Handler:    "accounts",
 			BodyParams: id,
