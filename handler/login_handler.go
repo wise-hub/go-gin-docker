@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ginws/config"
 	"ginws/helpers"
+	"ginws/middleware"
 	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
@@ -59,7 +60,7 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 				return
 			}
 
-			token, err := EncryptToken(login.Username, role)
+			token, err := middleware.EncryptToken(login.Username, role)
 			if err != nil {
 				panic(err)
 			}

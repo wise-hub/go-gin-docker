@@ -3,6 +3,7 @@ package handler
 import (
 	"ginws/config"
 	"ginws/helpers"
+	"ginws/middleware"
 	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
@@ -15,7 +16,7 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 
 		cust := &model_in.T{CustomerID: c.Param("id")}
 
-		if err := ValidateMiddleware(c, cust); err != nil {
+		if err := middleware.ValidateMiddleware(c, cust); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}

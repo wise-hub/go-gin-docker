@@ -3,6 +3,7 @@ package routes
 import (
 	"ginws/config"
 	"ginws/handler"
+	"ginws/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,13 +11,13 @@ import (
 func Routes(d *config.Dependencies) *gin.Engine {
 
 	r := gin.Default()
-	r.Use(handler.CORSMiddleware())
+	r.Use(middleware.CORSMiddleware())
 	r.POST("/api/login", handler.UserLoginHandler(d))
-	r.Use(handler.LogMiddleware(d))
+	r.Use(middleware.LogMiddleware(d))
 
 	api := r.Group("/api")
-	api.Use(handler.AuthMiddleware(d))
-	api.Use(handler.RoleMiddleware(d))
+	api.Use(middleware.AuthMiddleware(d))
+	api.Use(middleware.RoleMiddleware(d))
 
 	{
 		api.GET("/customer/:id", handler.CustomerHandler(d))
