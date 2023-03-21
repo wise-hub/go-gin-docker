@@ -45,7 +45,7 @@ func ReadCustFeedback(d *sql.DB, customer_id string) ([]model.CustomerFeedback, 
 	var feedbacks []model.CustomerFeedback
 	for rows.Next() {
 		var feedback model.CustomerFeedback
-		err = stmt.QueryRow(customer_id).Scan(&feedback.InsertDate,
+		err := rows.Scan(&feedback.InsertDate,
 			&feedback.CustomerID, &feedback.UserName, &feedback.Feedback)
 		if err != nil {
 			if err == sql.ErrNoRows {

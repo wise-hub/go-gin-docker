@@ -12,9 +12,11 @@ func Routes(d *config.Dependencies) *gin.Engine {
 	r := gin.Default()
 	r.Use(handler.CORSMiddleware())
 	r.POST("/api/login", handler.UserLoginHandler(d))
+	r.Use(handler.LogMiddleware(d))
 
 	api := r.Group("/api")
-	api.Use(handler.AuthenticateToken(d))
+	api.Use(handler.AuthMiddleware(d))
+	api.Use(handler.RoleMiddleware(d))
 
 	{
 		api.GET("/customer/:id", handler.CustomerHandler(d))

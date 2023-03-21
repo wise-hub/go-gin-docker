@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	"ginws/config"
 	"ginws/helpers"
 	"ginws/model_in"
@@ -10,65 +9,32 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		/* REFRESH TOKEN - FOR MAIN API METHOD */
-		if err := repository.UpdateTokenExpiry(d, c.GetString("username")); err != nil {
-			c.JSON(http.StatusOK, gin.H{"result": "Authentication Error"})
-			return
-		}
+		cust := &model_in.T{CustomerID: c.Param("id")}
 
-		/* ROLE CHECK */
-		if c.GetString("username") == "ADMIN" {
-			fmt.Println("ADMIN ROLE")
-			// do stuff
-		}
-		//////////////////////////////////////////////////////////////
-
-		// set the parameters from input data
-		id := &model_in.T{}
-		id.CustomerID = c.Param("id")
-
-		// validate input based on struct rules
-		validate := validator.New()
-		if err := validate.Struct(id); err != nil {
+		if err := ValidateMiddleware(c, cust); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
 
-		/* LOGGER PRELIMINARY */
-		logInfo := &repository.LogInfo{
-			Username:   c.GetString("username"),
-			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "customer",
-			BodyParams: id,
-		}
-		// end logger
-
 		// fetch customer data
-		customerData, err := repository.CustomerRepo(d.Db, id.CustomerID)
+		resultSet, err := repository.CustomerRepo(d.Db, cust.CustomerID)
 		if err != nil {
-			errMsg := err.Error()
-			logInfo.ErrorInfo = &errMsg
-			repository.SaveLog(d, logInfo)
 			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
+				c.JSON(http.StatusOK, gin.H{"result": "No results found"})
+				return
 			}
-			panic(err)
-		}
-
-		if err := repository.SaveLog(d, logInfo); err != nil {
-			fmt.Println("Error logging to Oracle database:", err)
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"result":       "OK",
-			"customerData": customerData,
+			"result":        "OK",
+			"customer_data": resultSet,
 		})
 
 	}

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"database/sql"
-	"fmt"
 	"ginws/config"
 	"ginws/helpers"
 	"ginws/model_in"
@@ -10,59 +8,34 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 func CustFeedbackReadHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		/* ROLE CHECK */
-		if c.GetString("role") == "ADMIN" {
-			fmt.Println("ADMIN ROLE")
-			// do stuff
-		}
-		//////////////////////////////////////////////////////////////
+		cust := &model_in.T{CustomerID: c.Param("id")}
 
-		// set the parameters from input data
-		id := &model_in.T{}
-		id.CustomerID = c.Param("id")
-
-		// validate input based on struct rules
-		validate := validator.New()
-		if err := validate.Struct(id); err != nil {
+		if err := ValidateMiddleware(c, cust); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
 
-		/* LOGGER PRELIMINARY */
-		logInfo := &repository.LogInfo{
-			Username:   c.GetString("username"),
-			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "customer-feedback-read",
-			BodyParams: id,
-		}
-		// end logger
-
 		// fetch customer data
-		customerData, err := repository.ReadCustFeedback(d.Db, id.CustomerID)
+		resultSet, err := repository.ReadCustFeedback(d.Db, cust.CustomerID)
 		if err != nil {
-			errMsg := err.Error()
-			logInfo.ErrorInfo = &errMsg
-			repository.SaveLog(d, logInfo)
-			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
-			}
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
 		}
 
-		if err := repository.SaveLog(d, logInfo); err != nil {
-			fmt.Println("Error logging to Oracle database:", err)
-			panic(err)
+		// handle zero accounts
+		if len(resultSet) == 0 {
+			c.JSON(http.StatusOK, gin.H{"result": "No results found"})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"result":       "OK",
-			"customerData": customerData,
+			"result":        "OK",
+			"feedback_data": resultSet,
 		})
 
 	}

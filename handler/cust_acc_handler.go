@@ -2,9 +2,9 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	"ginws/config"
 	"ginws/helpers"
+	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
 
@@ -14,54 +14,27 @@ import (
 func CustAccHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		/* ROLE CHECK */
-		if c.GetString("role") == "ADMIN" {
-			fmt.Println("ADMIN ROLE")
-			// do stuff
-		}
+		cust := &model_in.T{CustomerID: c.Param("id")}
 
-		///////////////////////////////////////////
-		// validate customer id
-		id := c.Param("id")
-
-		/* LOGGER PRELIMINARY */
-		logInfo := &repository.LogInfo{
-			Username:   c.GetString("username"),
-			IPAddress:  helpers.GetRemoteAddr(c),
-			Handler:    "customer-accounts",
-			BodyParams: id,
-		}
-		// end logger
-
-		if !helpers.IsValidCustomerID(id) {
-			errMsg := "Invalid customer ID"
-			logInfo.ErrorInfo = &errMsg
-			repository.SaveLog(d, logInfo)
-			c.JSON(http.StatusOK, gin.H{"result": errMsg})
+		if err := ValidateMiddleware(c, cust); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
-		//////////////////////////////////////////////////////////////
 
 		// fetch customer data
-		custAccData, err := repository.CustAccRepo(d.Db, id)
+		resultSet, err := repository.CustAccRepo(d.Db, cust.CustomerID)
 		if err != nil {
-			errMsg := err.Error()
-			logInfo.ErrorInfo = &errMsg
-			repository.SaveLog(d, logInfo)
 			if err == sql.ErrNoRows {
-				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
+				c.JSON(http.StatusOK, gin.H{"result": "No results found"})
+				return
 			}
-			panic(err)
-		}
-
-		if err := repository.SaveLog(d, logInfo); err != nil {
-			fmt.Println("Error logging to Oracle database:", err)
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"result":          "OK",
-			"custAccountData": custAccData,
+			"result":            "OK",
+			"cust_account_data": resultSet,
 		})
 
 	}

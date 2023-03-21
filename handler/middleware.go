@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -26,6 +27,84 @@ const (
 type TokenParams struct {
 	User string
 	Role string
+}
+
+type RequestParams struct {
+	QueryParams map[string]string      `json:"query_params"`
+	Body        map[string]interface{} `json:"body"`
+}
+
+func ValidateMiddleware(c *gin.Context, customType interface{}) error {
+
+	// validate keys (fields)
+	if err := c.ShouldBind(customType); err != nil {
+		return err
+	}
+
+	// validate values
+	validate := validator.New()
+	if err := validate.Struct(customType); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func RoleMiddleware(d *config.Dependencies) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if c.GetString("role") == "RANDOMxxx" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Insufficient Rights (0)"})
+			return
+		}
+
+		// add more logic
+		c.Next()
+
+	}
+}
+func LogMiddleware(d *config.Dependencies) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		queryParams := c.Request.URL.Query()
+
+		queryParamsMap := make(map[string]string)
+		for key, values := range queryParams {
+			if len(values) > 0 {
+				queryParamsMap[key] = values[0]
+			}
+		}
+
+		// Get the request body as a map[string]interface{}
+		var requestBody map[string]interface{}
+		err := c.ShouldBindJSON(&requestBody)
+		if err != nil {
+			// Handle error if needed
+		}
+
+		// Combine the GET parameters and request body
+		requestParams := &RequestParams{
+			QueryParams: queryParamsMap,
+			Body:        requestBody,
+		}
+
+		// You can customize this to include additional information as needed
+		logInfo := &repository.LogInfo{
+			Username:   c.GetString("username"), // Replace this with the actual username
+			IPAddress:  c.ClientIP(),
+			Handler:    c.HandlerName(),
+			BodyParams: requestParams, // You might need to adjust this based on the request format
+			ErrorInfo:  nil,           // Replace this with an actual error if one occurs
+		}
+
+		err = repository.SaveLog(d, logInfo)
+
+		if err != nil {
+			c.Error(err)
+		}
+	}
 }
 
 func EncryptToken(username, role string) (string, error) {
@@ -121,48 +200,45 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AuthenticateToken(d *config.Dependencies) gin.HandlerFunc {
+func AuthMiddleware(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 
 		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (0)"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (0)"})
 			return
 		}
 
 		authHeaderParts := strings.Split(authHeader, " ")
 		if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (1)"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
 			return
 		}
 
 		token := authHeaderParts[1]
 
 		if len(token) > 128 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (2)"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (2)"})
 			return
 		}
 
 		match, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\=\_\+]+$`, token)
 		if err != nil || !match {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (3)"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (3)"})
 			return
 		}
 
 		tokenParams, err := decryptToken(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (4)"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (4)"})
 			return
 		}
 
 		if d.Cfg.TokenDbCheck != "N" {
-			//fmt.Println("TokenCheck entering")
 			if !repository.ValidateTokenOnline(d.Db, token) {
-				//fmt.Println("TokenCheck FAILED")
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthprized (5)"})
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (5)"})
 				return
 			}
-			//fmt.Println("TokenCheck successful")
 		}
 
 		c.Set("username", tokenParams.User)
