@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func Init() (*Dependencies, error) {
@@ -28,7 +29,7 @@ func Init() (*Dependencies, error) {
 		return nil, err
 	}
 	fmt.Println("DB CONNECTED")
-	fmt.Println(&curCfg)
+	//fmt.Println(&curCfg)
 	return &Dependencies{
 		Cfg: &curCfg,
 		Db:  db,
@@ -46,6 +47,10 @@ func loadCfg() (*MainConfig, error) {
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&cfg); err != nil {
+		return nil, err
+	}
+
+	if err := validateConfig(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -67,9 +72,23 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+<<<<<<< HEAD
 	db.SetMaxOpenConns(50)
 	db.SetMaxIdleConns(40)
 	db.SetConnMaxLifetime(time.Minute * 15)
+=======
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Minute * cfg.ConnMaxLifetime)
+>>>>>>> http-only
 
 	return db, nil
+}
+
+func validateConfig(cfg *MainConfig) error {
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return err
+	}
+	return nil
 }

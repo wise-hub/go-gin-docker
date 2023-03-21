@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"ginws/config"
 	"ginws/helpers"
 	"ginws/repository"
@@ -10,50 +11,65 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetCustAccHandler(d *config.Dependencies) gin.HandlerFunc {
+func CustAccHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		// /////////////////////////////////////////
-		// TOKEN AUTHENTICATION
-		// /////////////////////////////////////////
-
-		// OFFLINE - decrypts and checks
-		tokenData, err := helpers.ValidateTokenFull(c)
+		/* TOKEN AUTHENTICATION */
+		tokenParams, err := ValidateToken(c, d)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": err.Error()})
 			return
 		}
 
-		// ONLINE - checks in DB. COMMENT it for fewer DB I/O
-		if !repository.ValidateTokenAtDb(d.Db, tokenData.Token) {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "Unauthorized (1)"})
-			return
+		/* ROLE CHECK */
+		if tokenParams.Role == "ADMIN" {
+			fmt.Println("ADMIN ROLE")
+			// do stuff
 		}
-		// ////////////////////////////////////////
 
+		///////////////////////////////////////////
 		// validate customer id
 		id := c.Param("id")
+
+		/* LOGGER PRELIMINARY */
+		logInfo := &repository.LogInfo{
+			Username:   tokenParams.User,
+			IPAddress:  helpers.GetRemoteAddr(c),
+			Handler:    "customer-accounts",
+			BodyParams: id,
+		}
+		// end logger
+
 		if !helpers.IsValidCustomerID(id) {
-			c.JSON(http.StatusOK, gin.H{"result": "Invalid customer ID"})
+			errMsg := "Invalid customer ID"
+			logInfo.ErrorInfo = &errMsg
+			repository.SaveLog(d, logInfo)
+			c.JSON(http.StatusOK, gin.H{"result": errMsg})
 			return
 		}
+		//////////////////////////////////////////////////////////////
 
 		// fetch customer data
-		custAccData, err := repository.GetCustAccRepo(d.Db, id)
+		custAccData, err := repository.CustAccRepo(d.Db, id)
 		if err != nil {
+			errMsg := err.Error()
+			logInfo.ErrorInfo = &errMsg
+			repository.SaveLog(d, logInfo)
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusOK, gin.H{"result": "No customer found"})
-				return
 			}
 			panic(err)
 		}
 
-		res := gin.H{
-			"result":          "OK",
-			"custAccountData": custAccData,
+		if err := repository.SaveLog(d, logInfo); err != nil {
+			fmt.Println("Error logging to Oracle database:", err)
+			panic(err)
 		}
 
-		c.JSON(http.StatusOK, res)
+		c.JSON(http.StatusOK, gin.H{
+			"result":          "OK",
+			"custAccountData": custAccData,
+		})
 
 	}
 }

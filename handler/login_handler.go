@@ -4,21 +4,24 @@ import (
 	"fmt"
 	"ginws/config"
 	"ginws/helpers"
-	"ginws/model"
+	"ginws/model_in"
 	"ginws/repository"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		login := &model.Login{}
+
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+		login := &model_in.InLogin{}
 
 		if err := c.ShouldBind(&login); err != nil {
-			fmt.Println("not bound json")
-			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			fmt.Println("Not bound JSON")
+			c.JSON(http.StatusBadRequest,
+				gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
 			return
 		}
 
@@ -56,22 +59,30 @@ func UserLoginHandler(d *config.Dependencies) gin.HandlerFunc {
 				return
 			}
 
-			expirationDate := time.Now().Add(time.Hour)
-
-			fmt.Printf("%s - %s - %s\n", login.Username, role, expirationDate.Format(time.RFC3339))
-
-			token, err := helpers.EncryptData(login.Username, role, expirationDate)
+			token, err := EncryptToken(login.Username, role)
 			if err != nil {
 				panic(err)
 			}
 
 			remoteAddr := helpers.GetRemoteAddr(c)
-			tokenInserted, err := repository.InsertNewToken(d.Db, login.Username, token, remoteAddr)
+			tokenInserted, err := repository.InsertNewToken(d, login.Username, token, remoteAddr)
 
 			if err != nil || !tokenInserted {
 				fmt.Println("user table update failed")
 				c.JSON(http.StatusOK, gin.H{"result": "wtf"})
 				return
+			}
+
+			logInfo := &repository.LogInfo{
+				Username:  login.Username,
+				IPAddress: helpers.GetRemoteAddr(c),
+				Handler:   "login",
+				//BodyParams: map[string]interface{}{"customer": id},
+			}
+
+			if err := repository.SaveLog(d, logInfo); err != nil {
+				fmt.Println("Error logging to Oracle database:", err)
+				panic(err)
 			}
 
 			res["result"] = "OK"

@@ -14,6 +14,5 @@ func main() {
 	}
 
 	r := routes.Routes(d)
-	//r.RunTLS(":"+d.Cfg.Port, d.Cfg.PemLoc, d.Cfg.KeyLoc)
-	r.Run(":8000")
+	r.Run(":" + d.Cfg.Port)
 }

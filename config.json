@@ -3,41 +3,47 @@
 
     "Config":
         [{
-            "EnvType": "TEST",
+            "env_type": "TEST",
 
-            "Port": "4444",
-            "PemLoc": "./cert/server.pem",
-            "KeyLoc": "./cert/server.key",
-            "Database":  {
-                "Server": "192.168.0.100",
-                "Port": "1521",
-                "Service": "orcl",
-                "Username": "db",
-                "Password": "db"
+            "port": "8001",
+            "session_lifetime_mins": "60",
+            "token_db_check": "Y",
+            "database":  {
+                "server": "192.168.0.100",
+                "port": "1521",
+                "service": "orcl",
+                "username": "db",
+                "password": "db",
+                "max_open_conns": 50,
+                "max_idle_conns": 40,
+                "conn_max_lifetime": 30
             },
-            "LDAP" : {
-                "Server": "ldap.forumsys.com",
-                "Port": "389",
-                "UserDN": "dc=example,dc=com"
+            "ldap" : {
+                "server": "ldap.forumsys.com",
+                "port": "389",
+                "user_dn": "dc=example,dc=com"
             }
         },
         {
-            "EnvType": "PROD",
+            "env_type": "PROD",
 
-            "Port": "4444",
-            "PemLoc": "./cert/server.pem",
-            "KeyLoc": "./cert/server.key",
-            "Database":  {
-                "Server": "10.10.10.10",
-                "Port": "1521",
-                "Service": "sn",
-                "Username": "usr",
-                "Password": "pwd"
+            "port": "8000",
+            "session_lifetime_mins": "60",
+            "token_db_check": "Y",
+            "database":  {
+                "server": "ex01.asd.asd.asd",
+                "port": "1521",
+                "service": "sn",
+                "username": "usr",
+                "password": "pwd",
+                "max_open_conns": 30,
+                "max_idle_conns": 20,
+                "conn_max_lifetime": 30
             },
-            "LDAP" : {
-                "Server": "ldap.forumsys.com",
-                "Port": "389",
-                "UserDN": "dc=example,dc=com"
+            "ldap" : {
+                "server": "ldap.forumsys.com",
+                "port": "389",
+                "user_dn": "dc=example,dc=com"
             }
         }]
 }

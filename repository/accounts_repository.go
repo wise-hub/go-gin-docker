@@ -6,7 +6,7 @@ import (
 	"ginws/model"
 )
 
-func GetAccountsRepo(d *sql.DB, customer_id string) ([]model.Account, error) {
+func AccountsRepo(d *sql.DB, customer_id string) ([]model.Account, error) {
 
 	stmt, err := d.Prepare("select iban, balance from accounts where customer_id = :1")
 	if err != nil {
