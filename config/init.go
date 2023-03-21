@@ -72,15 +72,9 @@ func connectDb(cfg *Database) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-<<<<<<< HEAD
-	db.SetMaxOpenConns(50)
-	db.SetMaxIdleConns(40)
-	db.SetConnMaxLifetime(time.Minute * 15)
-=======
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetConnMaxLifetime(time.Minute * cfg.ConnMaxLifetime)
->>>>>>> http-only
 
 	return db, nil
 }
