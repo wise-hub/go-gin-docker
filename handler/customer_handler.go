@@ -22,6 +22,11 @@ func CustomerHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
+		if err := middleware.LogMiddleware(d, c, cust); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
+		}
+
 		// fetch customer data
 		resultSet, err := repository.CustomerRepo(d.Db, cust.CustomerID)
 		if err != nil {

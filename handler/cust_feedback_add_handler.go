@@ -22,6 +22,11 @@ func CustFeedbackAddHandler(d *config.Dependencies) gin.HandlerFunc {
 			return
 		}
 
+		if err := middleware.LogMiddleware(d, c, custFeedback); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})
+			return
+		}
+
 		// insert new feedback record
 		if err := repository.InsertCustFeedback(d.Db, custFeedback, c.GetString("username")); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": helpers.AssertEnvForError(d.Cfg.EnvType, err)})

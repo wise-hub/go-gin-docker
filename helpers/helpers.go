@@ -55,7 +55,7 @@ func AssertEnvForError(env string, err error) string {
 
 	result := "Invalid request payload"
 
-	if env == "TEST" {
+	if env == "TEST" || env == "PROD" {
 		result = err.Error()
 	}
 

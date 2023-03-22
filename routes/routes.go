@@ -12,8 +12,9 @@ func Routes(d *config.Dependencies) *gin.Engine {
 
 	r := gin.Default()
 	r.Use(middleware.CORSMiddleware())
+	// r.Use(middleware.LogMiddleware(d))
+
 	r.POST("/api/login", handler.UserLoginHandler(d))
-	r.Use(middleware.LogMiddleware(d))
 
 	{
 		api := r.Group("/api")
