@@ -40,8 +40,8 @@ func AccountsHandler(d *config.Dependencies) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"result":       "OK",
-			"accountsData": resultSet,
+			"result":        "OK",
+			"accounts_data": resultSet,
 		})
 	}
 }

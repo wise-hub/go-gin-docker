@@ -76,7 +76,7 @@ func AuthMiddleware(d *config.Dependencies) gin.HandlerFunc {
 }
 
 func EncryptToken(username, role string) (string, error) {
-	remainingLength := plaintextLength - len(username) - len(role) - 2 // two commas
+	remainingLength := plaintextLength - len(username) - len(role) - 1 // one comma
 	padding := ""
 	if remainingLength > 0 {
 		padding = strings.Repeat("0", remainingLength)
